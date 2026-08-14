@@ -1,0 +1,14 @@
+{"synthetic": true, "event": "capture", "capture_id": "synthetic-a000", "at": "2026-02-01T09:00:00+0000", "method": "fixture", "url_count": 1}
+{"synthetic": true, "event": "reference", "capture_id": "synthetic-a000", "referent_key": "https://example.test/article/alpha", "object_hash": "aa01f3c9d2b47e60", "shared_url": "https://example.test/article/alpha", "final_url": "https://example.test/article/alpha"}
+{"synthetic": true, "event": "fetch_pair", "capture_id": "synthetic-a000", "url": "https://example.test/article/alpha", "a": {"ua": "bare", "status": 200, "blob": "b1c2d3e4f5a60718", "text_len": 640}, "b": {"ua": "browser", "status": 200, "blob": "b1c2d3e4f5a60718", "text_len": 640}, "byte_identical": true, "text_similarity": 1.0, "meta_identity": true, "wall_markers": [], "shell": false}
+{"synthetic": true, "event": "finding", "capture_id": "synthetic-a000", "kind": "stable_referent", "flags": [], "host": "example.test", "title": "Alpha, a synthetic article", "object_hash": "aa01f3c9d2b47e60"}
+{"synthetic": true, "event": "capture", "capture_id": "synthetic-a001", "at": "2026-02-02T09:00:00+0000", "method": "fixture", "url_count": 1}
+{"synthetic": true, "event": "reference", "capture_id": "synthetic-a001", "referent_key": "https://paywalled.test/story/beta", "object_hash": "bb02e4d8c1a35f79", "shared_url": "https://paywalled.test/story/beta", "final_url": "https://paywalled.test/story/beta"}
+{"synthetic": true, "event": "archive_policy", "capture_id": "synthetic-a001", "mode": "non_interactive_read_only", "snapshots_found": 0, "private_hint": false}
+{"synthetic": true, "event": "archive_attempt", "capture_id": "synthetic-a001", "outcome": "no_snapshot", "status": 404}
+{"synthetic": true, "event": "finding", "capture_id": "synthetic-a001", "kind": "producer_refused", "flags": ["paywall"], "host": "paywalled.test", "title": "Beta, refused by the producer", "object_hash": "bb02e4d8c1a35f79"}
+{"synthetic": true, "event": "capture", "capture_id": "synthetic-a002", "at": "2026-02-03T09:00:00+0000", "method": "fixture", "url_count": 1}
+{"synthetic": true, "event": "reference", "capture_id": "synthetic-a002", "referent_key": "https://video.test/watch/gamma", "object_hash": "cc03d5b7a2e46081", "shared_url": "https://video.test/s/gamma-short", "final_url": "https://video.test/watch/gamma"}
+{"synthetic": true, "event": "finding", "capture_id": "synthetic-a002", "kind": "payload_no_referent", "flags": ["video"], "host": "video.test", "title": "Gamma, a synthetic video", "object_hash": "cc03d5b7a2e46081", "alt_referents": {"canonical": {"hash": "cc03d5b7a2e46081", "url": "https://video.test/watch/gamma"}}}
+{"synthetic": true, "event": "finding", "capture_id": "synthetic-a003", "host": "nokind.test", "object_hash": "dd04c6a893f57192"}
+{"synthetic": true, "event": "reference", "capture_id": "synthetic-a004", "referent_key": "https://example.test/article/epsilon", "object_hash": "ee05b79a8406283b"}

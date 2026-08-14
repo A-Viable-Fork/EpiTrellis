@@ -13,7 +13,7 @@ The bet is that if that works well enough, the phone stops being a set of apps y
 
 ## Status
 
-Early. One measuring instrument runs, four functions run, four checks pass. Everything else is design.
+Early. One measuring instrument runs, five functions run, four checks pass. Everything else is design.
 
 What has actually been established, as of August 2026:
 

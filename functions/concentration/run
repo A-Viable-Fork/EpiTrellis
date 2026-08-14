@@ -1,0 +1,171 @@
+#!/usr/bin/env python3
+"""Run kyaloeric's concentration and warrant assessment over this journal.
+
+The method is vendored unmodified under vendor/src/. This wrapper does one job:
+translate journal events into the graph shape warrant.assess_graph reads, and
+translate his answer back. It does not compute anything. If a number appears in
+the output, his code produced it.
+
+The translation is deliberately incomplete, and that incompleteness is the
+result rather than a defect in the wrapper. The journal individuates objects a
+receiver encountered. It records nothing about what any object asserts and
+nothing about any object standing in an evidential relation to another, so this
+builds nodes and no edges, and declines to assign kinds. See GAP.md.
+
+Three edge constructions were available and all three are refused, because each
+returns a number that looks like a result and is not one: the Depends-on graph
+in docs/ is document dependency rather than evidential support, co-occurrence on
+a shared object_hash or an alt_referent or a fetch_pair is not support, and
+finding.kind types the instrument's outcome rather than a claim about the world.
+
+License: Apache-2.0 for this wrapper. The vendored method is MIT, see LICENSE.
+"""
+import json
+import os
+import sys
+
+HERE = os.path.dirname(os.path.abspath(__file__))
+# warrant.py does `from src.concentration import ...` at module level, so the
+# package root goes on the path rather than the module directory. Preserving the
+# upstream layout is what keeps the vendored bytes untouched.
+sys.path.insert(0, os.path.join(HERE, "vendor"))
+
+from src import warrant  # noqa: E402
+
+
+def emit(obj):
+    sys.stdout.write(json.dumps(obj) + "\n")
+
+
+def note(text):
+    """Lines without an "event" are display and are not persisted."""
+    sys.stdout.write(text + "\n")
+
+
+def read_events():
+    rows = []
+    for line in sys.stdin:
+        line = line.strip()
+        if not line:
+            continue
+        try:
+            rows.append(json.loads(line))
+        except Exception:
+            continue
+    return [r for r in rows if isinstance(r, dict)]
+
+
+def build_graph(rows):
+    """The most the journal honestly supports: one node per encountered object.
+
+    An object is identified by object_hash, which the receiver derives locally.
+    Text is descriptive only, taken from whatever label the journal already
+    carries. No kind is assigned, because the journal does not record what an
+    object asserts, and no edges are built, because it records no relation
+    between one object and another.
+    """
+    nodes, order = {}, []
+    for r in rows:
+        if r.get("event") not in ("reference", "finding"):
+            continue
+        h = r.get("object_hash")
+        if not h:
+            continue
+        if h not in nodes:
+            nodes[h] = {"id": h, "text": ""}
+            order.append(h)
+        label = r.get("title") or r.get("referent_key") or r.get("host") or ""
+        if label and not nodes[h]["text"]:
+            nodes[h]["text"] = label
+    claims = [nodes[h] for h in order]
+    for c in claims:
+        if not c["text"]:
+            c["text"] = c["id"]
+    return {"case": "epitrellis-journal", "question": "", "shape": "",
+            "sources": [], "claims": claims, "edges": []}
+
+
+def main():
+    rows = read_events()
+    graph = build_graph(rows)
+
+    counts = {}
+    for r in rows:
+        k = r.get("event", "<no event field>")
+        counts[k] = counts.get(k, 0) + 1
+    note("journal: %d events across %s"
+         % (len(rows), ", ".join("%s=%d" % kv for kv in sorted(counts.items()))))
+    note("translated: %d node(s), %d edge(s)"
+         % (len(graph["claims"]), len(graph["edges"])))
+
+    if not graph["claims"]:
+        # validate_graph raises on an empty claim list. Reporting that is
+        # honest; padding the list to get past it would not be.
+        note("no objects in the journal, so there is no graph to assess.")
+        emit({"event": "foreign_method_result",
+              "method": "kyaloeric/epistemic-stack concentration+warrant",
+              "commit": "89d6632abd0b7678b738b722547d17b984fe1014",
+              "grade": "not_run",
+              "reason": "journal carries no object_hash, claims list would be empty"})
+        return 0
+
+    # assess_graph never calls validate_graph. Calling it explicitly is the
+    # point of the exercise: these warnings are his code's own account of where
+    # our data fails his shape, which is worth more than the same observation
+    # written by hand.
+    try:
+        warnings = warrant.validate_graph(graph)
+    except ValueError as e:
+        note("validate_graph rejected the translation: %s" % e)
+        emit({"event": "foreign_method_result",
+              "method": "kyaloeric/epistemic-stack concentration+warrant",
+              "commit": "89d6632abd0b7678b738b722547d17b984fe1014",
+              "grade": "fails_to_compose", "reason": str(e)})
+        return 0
+
+    for w in warnings:
+        emit({"event": "foreign_method_warning",
+              "method": "kyaloeric/epistemic-stack warrant.validate_graph",
+              "warning": w})
+    note("validate_graph: %d warning(s)" % len(warnings))
+    for w in warnings[:40]:
+        note("  " + w)
+    if len(warnings) > 40:
+        note("  ... %d more" % (len(warnings) - 40))
+
+    bundle = warrant.assess_graph(graph, case="epitrellis-journal")
+    conc = bundle.get("concentration", [])
+    cruxes = bundle.get("assessment", {}).get("cruxes", [])
+    circ = bundle.get("circular_support", [])
+
+    note("")
+    note("concentration results: %d" % len(conc))
+    note("cruxes: %d" % len(cruxes))
+    note("circular-support flags: %d" % len(circ))
+    for r in conc:
+        note("  %s  concentration=%s  effective_independent=%s  supporters=%s"
+             % (r.get("conclusion"), r.get("concentration"),
+                r.get("effective_independent_claims"),
+                r.get("supporting_claim_count")))
+
+    empty = not conc and not cruxes and not circ
+    emit({"event": "foreign_method_result",
+          "method": "kyaloeric/epistemic-stack concentration+warrant",
+          "commit": "89d6632abd0b7678b738b722547d17b984fe1014",
+          "grade": "composes_empty" if empty else "composes_with_signal",
+          "nodes": len(graph["claims"]),
+          "edges": len(graph["edges"]),
+          "warnings": len(warnings),
+          "concentration_results": len(conc),
+          "cruxes": len(cruxes),
+          "circular_support_flags": len(circ)})
+
+    if empty:
+        note("")
+        note("empty is the result. His math ran and found nothing to measure,")
+        note("because the journal holds no relation between objects. See GAP.md.")
+    return 0
+
+
+if __name__ == "__main__":
+    sys.exit(main())

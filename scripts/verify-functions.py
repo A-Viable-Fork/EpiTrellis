@@ -40,12 +40,20 @@ for name, fn in fns.items():
     # tolerance check two: a known event type with fields removed and fields
     # added. The spec requires tolerating unknown fields as well as unknown
     # event types, and check one never exercises that.
+    # The three event types below are emitted by the probe and absent from the
+    # journal fixture, so a function can pass every other case here having never
+    # seen one. Real-but-absent is a likelier break than genuinely unknown.
     res3 = loader.invoke(fn, events + [
         {"event": "finding"},
         {"event": "finding", "kind": "stable_referent",
          "unknown_field": {"nested": [1, 2]}, "flags": []},
         {"event": "reference"},
         {"event": "capture", "later_addition": None},
+        {"event": "fetch_pair", "url": "https://example.test/x",
+         "a": {"blob": "0" * 16}, "b": {}, "byte_identical": False},
+        {"event": "archive_policy", "mode": "non_interactive_read_only",
+         "snapshots_found": 0},
+        {"event": "archive_attempt"},
     ], args)
     if not res3["ok"]:
         fails.append("%s: crashed on a known event type with fields removed "
