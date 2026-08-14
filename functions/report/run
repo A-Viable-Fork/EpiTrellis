@@ -1,0 +1,45 @@
+#!/usr/bin/env python3
+"""Verdict distribution and the A-1 reading, computed from journal events."""
+import json, sys
+
+rows = []
+for line in sys.stdin:
+    line = line.strip()
+    if line:
+        try: rows.append(json.loads(line))
+        except Exception: pass
+
+finds = [r for r in rows if r.get("event") == "finding"]
+caps = [r for r in rows if r.get("event") == "capture"]
+print("captures: %d   findings: %d" % (len(caps), len(finds)))
+if not finds:
+    sys.exit(0)
+
+kinds, flags, hosts = {}, {}, {}
+for r in finds:
+    kinds[r["kind"]] = kinds.get(r["kind"], 0) + 1
+    for x in r.get("flags", []): flags[x] = flags.get(x, 0) + 1
+    h = r.get("host")
+    if h:
+        hosts.setdefault(h, [0, 0]); hosts[h][0] += 1
+        if r["kind"] == "stable_referent": hosts[h][1] += 1
+
+print("\nverdicts")
+for k, v in sorted(kinds.items(), key=lambda x: -x[1]):
+    print("  %-26s %3d  %5.1f%%" % (k, v, 100.0*v/len(finds)))
+print("\nflags")
+for k, v in sorted(flags.items(), key=lambda x: -x[1]):
+    print("  %-26s %3d" % (k, v))
+print("\nby host (stable / total)")
+for h, (t, s) in sorted(hosts.items(), key=lambda x: -x[1][0])[:20]:
+    print("  %-34s %d/%d" % (h[:34], s, t))
+
+n = len(finds)
+def pct(k): return 100.0 * kinds.get(k, 0) / n
+print("\nA-1 reading (n=%d)" % n)
+print("  stable referent, structure attaches   %5.1f%%" % pct("stable_referent"))
+print("  reference stable, payload elsewhere   %5.1f%%" % pct("client_rendered"))
+print("  producer declined                     %5.1f%%" % (pct("producer_refused")+pct("soft_refusal")))
+print("  recovered from archive                %5.1f%%" % pct("recovered_from_archive"))
+print("  no reference emitted at all           %5.1f%%" % pct("no_reference"))
+print("  payload shared, no referent           %5.1f%%" % pct("payload_no_referent"))

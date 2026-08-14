@@ -1,0 +1,2 @@
+Apache License 2.0. Covers kernel/, scripts/, probe/, and anything not otherwise marked.
+Full text: ./LICENSE

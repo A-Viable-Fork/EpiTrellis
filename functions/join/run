@@ -1,0 +1,45 @@
+#!/usr/bin/env python3
+"""Compare a bundle from elsewhere against this journal.
+
+Set intersection over independently derived hashes. Neither party had to
+agree with the other, or know the other existed. Alternate referents that
+match surface as candidate equivalences, which are proposals: whether two
+addresses denote one object is a judgment, and it belongs to the judge."""
+import json, sys
+
+if len(sys.argv) < 2:
+    print("usage: join <other-bundle.json>", file=sys.stderr); sys.exit(2)
+
+rows = []
+for line in sys.stdin:
+    line = line.strip()
+    if line:
+        try: rows.append(json.loads(line))
+        except Exception: pass
+
+refs = {r.get("capture_id"): r for r in rows if r.get("event") == "reference"}
+mine = {}
+for r in rows:
+    if r.get("event") == "finding" and r.get("object_hash"):
+        mine[r["object_hash"]] = (refs.get(r.get("capture_id"), {}) or {}).get("referent_key")
+
+try:
+    theirs = json.load(open(sys.argv[1]))
+except Exception as e:
+    print("cannot read bundle: %s" % e, file=sys.stderr); sys.exit(1)
+
+th = {o["h"]: o for o in theirs.get("objects", [])}
+shared = set(mine) & set(th)
+print("mine %d, theirs %d, shared %d" % (len(mine), len(th), len(shared)))
+for h in sorted(shared):
+    print("  " + (mine[h] or h)[:70])
+
+cand = []
+for o in theirs.get("objects", []):
+    for ah in (o.get("alt") or {}):
+        if ah in mine and o["h"] not in shared:
+            cand.append((mine[ah], o.get("ref")))
+if cand:
+    print("\ncandidate equivalences, for you to accept or reject:")
+    for a, b in cand:
+        print("  %s\n    ~ %s" % ((a or "")[:64], (b or "")[:64]))

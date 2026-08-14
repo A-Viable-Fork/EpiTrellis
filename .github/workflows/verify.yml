@@ -1,0 +1,23 @@
+name: verify
+
+on: [push, pull_request]
+
+jobs:
+  verify:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.11'
+
+      # Privacy runs first and alone. Nothing else matters if real capture
+      # data has entered the tree.
+      - name: privacy
+        run: python3 scripts/verify-privacy.py
+
+      - name: license
+        run: python3 scripts/verify-license.py
+
+      - name: functions
+        run: python3 scripts/verify-functions.py

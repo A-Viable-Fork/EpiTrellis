@@ -1,0 +1,27 @@
+{"synthetic": true, "event": "capture", "capture_id": "synthetic-0000", "at": "2026-01-01T12:00:00+0000", "method": "fixture", "url_count": 1}
+{"synthetic": true, "event": "reference", "capture_id": "synthetic-0000", "referent_key": "https://lesswrong.com/item/0", "object_hash": "28e9e3212d06ddb6", "shared_url": "https://lesswrong.com/item/0", "final_url": "https://lesswrong.com/item/0"}
+{"synthetic": true, "event": "finding", "capture_id": "synthetic-0000", "kind": "stable_referent", "flags": ["unstable_bytes"], "host": "lesswrong.com", "title": "A Full Epistemic Stack", "object_hash": "28e9e3212d06ddb6"}
+{"synthetic": true, "event": "capture", "capture_id": "synthetic-0001", "at": "2026-01-02T12:00:00+0000", "method": "fixture", "url_count": 1}
+{"synthetic": true, "event": "reference", "capture_id": "synthetic-0001", "referent_key": "https://arxiv.org/item/1", "object_hash": "7ef662bded922c8a", "shared_url": "https://arxiv.org/item/1", "final_url": "https://arxiv.org/item/1"}
+{"synthetic": true, "event": "finding", "capture_id": "synthetic-0001", "kind": "stable_referent", "flags": [], "host": "arxiv.org", "title": "Attention Is All You Need", "object_hash": "7ef662bded922c8a"}
+{"synthetic": true, "event": "capture", "capture_id": "synthetic-0002", "at": "2026-01-03T12:00:00+0000", "method": "fixture", "url_count": 1}
+{"synthetic": true, "event": "reference", "capture_id": "synthetic-0002", "referent_key": "https://reddit.com/item/2", "object_hash": "2d6548fa06419a30", "shared_url": "https://reddit.com/item/2", "final_url": "https://reddit.com/item/2"}
+{"synthetic": true, "event": "finding", "capture_id": "synthetic-0002", "kind": "soft_refusal", "flags": ["served_stub_not_content"], "host": "reddit.com", "title": "Reddit", "object_hash": "2d6548fa06419a30"}
+{"synthetic": true, "event": "capture", "capture_id": "synthetic-0003", "at": "2026-01-04T12:00:00+0000", "method": "fixture", "url_count": 1}
+{"synthetic": true, "event": "reference", "capture_id": "synthetic-0003", "referent_key": "https://tiktok.com/item/3", "object_hash": "205b33d4f7699f46", "shared_url": "https://tiktok.com/item/3", "final_url": "https://tiktok.com/item/3"}
+{"synthetic": true, "event": "finding", "capture_id": "synthetic-0003", "kind": "client_rendered", "flags": ["payload_not_at_reference"], "host": "tiktok.com", "title": "TikTok", "object_hash": "205b33d4f7699f46"}
+{"synthetic": true, "event": "capture", "capture_id": "synthetic-0004", "at": "2026-01-05T12:00:00+0000", "method": "fixture", "url_count": 1}
+{"synthetic": true, "event": "reference", "capture_id": "synthetic-0004", "referent_key": "https://nytimes.com/item/4", "object_hash": "bd0b2d4fb2b77b6d", "shared_url": "https://nytimes.com/item/4", "final_url": "https://nytimes.com/item/4"}
+{"synthetic": true, "event": "finding", "capture_id": "synthetic-0004", "kind": "producer_refused", "flags": ["access_denied", "no_archive_snapshot"], "host": "nytimes.com", "title": "", "object_hash": "bd0b2d4fb2b77b6d"}
+{"synthetic": true, "event": "capture", "capture_id": "synthetic-0005", "at": "2026-01-06T12:00:00+0000", "method": "fixture", "url_count": 0}
+{"synthetic": true, "event": "reference", "capture_id": "synthetic-0005", "referent_key": null, "object_hash": "95d4c22dab7a2715", "shared_url": null, "final_url": null}
+{"synthetic": true, "event": "finding", "capture_id": "synthetic-0005", "kind": "no_reference", "flags": [], "host": null, "title": "", "object_hash": "95d4c22dab7a2715"}
+{"synthetic": true, "event": "capture", "capture_id": "synthetic-0006", "at": "2026-01-07T12:00:00+0000", "method": "fixture", "url_count": 0}
+{"synthetic": true, "event": "reference", "capture_id": "synthetic-0006", "referent_key": null, "object_hash": "98a45bdcdea9ac04", "shared_url": null, "final_url": null}
+{"synthetic": true, "event": "finding", "capture_id": "synthetic-0006", "kind": "payload_no_referent", "flags": ["payload_present", "media_kind:image"], "host": null, "title": "photo.png", "object_hash": "98a45bdcdea9ac04"}
+{"synthetic": true, "event": "capture", "capture_id": "synthetic-0007", "at": "2026-01-08T12:00:00+0000", "method": "fixture", "url_count": 0}
+{"synthetic": true, "event": "reference", "capture_id": "synthetic-0007", "referent_key": null, "object_hash": "aed6397d7cb383fd", "shared_url": null, "final_url": null}
+{"synthetic": true, "event": "finding", "capture_id": "synthetic-0007", "kind": "payload_with_embedded_referent", "flags": ["embedded_doi"], "host": null, "title": "paper.pdf", "object_hash": "aed6397d7cb383fd", "alt_referents": {"doi": {"url": "doi:10.1000/synthetic", "hash": "2fae86740f046c3e"}}}
+{"synthetic": true, "event": "capture", "capture_id": "synthetic-0008", "at": "2026-01-09T12:00:00+0000", "method": "fixture", "url_count": 1}
+{"synthetic": true, "event": "reference", "capture_id": "synthetic-0008", "referent_key": "https://example.org/item/8", "object_hash": "c3b28834b597d5a0", "shared_url": "https://example.org/item/8", "final_url": "https://example.org/item/8"}
+{"synthetic": true, "event": "finding", "capture_id": "synthetic-0008", "kind": "recovered_from_archive", "flags": ["payload_from_archive"], "host": "example.org", "title": "Archived Post", "object_hash": "c3b28834b597d5a0"}

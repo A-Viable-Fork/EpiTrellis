@@ -1,0 +1,42 @@
+#!/usr/bin/env python3
+"""What travels between parties: referent hashes, no payload.
+
+The multi-homing argument made measurable. Copyright forces identity and
+payload apart, so what crosses is kilobytes. At that size publishing to five
+hosts costs nothing, and no gradient pulls anyone toward a single one. If
+payload ever rides along, the gradient returns and concentration follows."""
+import json, sys
+
+rows = []
+for line in sys.stdin:
+    line = line.strip()
+    if line:
+        try: rows.append(json.loads(line))
+        except Exception: pass
+
+refs = {r.get("capture_id"): r for r in rows if r.get("event") == "reference"}
+objs = {}
+for r in rows:
+    if r.get("event") != "finding" or not r.get("object_hash"):
+        continue
+    h = r["object_hash"]
+    ref = refs.get(r.get("capture_id"), {})
+    e = objs.setdefault(h, {"h": h, "ref": ref.get("referent_key"),
+                            "alt": {}, "kinds": [], "n": 0})
+    e["n"] += 1
+    if r["kind"] not in e["kinds"]:
+        e["kinds"].append(r["kind"])
+    for v in (r.get("alt_referents") or {}).values():
+        e["alt"][v["hash"]] = v["url"]
+
+out = {"v": 0, "objects": [
+    {"h": o["h"], "ref": o["ref"], "seen": o["n"], "kinds": o["kinds"], "alt": o["alt"]}
+    for o in sorted(objs.values(), key=lambda x: x["ref"] or "")]}
+
+blob = json.dumps(out, separators=(",", ":"))
+print(blob)
+
+n = len(out["objects"])
+if n:
+    print("%d objects, %d bytes, %.0f per object" % (n, len(blob), len(blob)/n),
+          file=sys.stderr)
