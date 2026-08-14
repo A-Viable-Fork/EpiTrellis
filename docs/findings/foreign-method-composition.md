@@ -153,10 +153,14 @@ the one his own web endpoint uses, calls it once per conclusion inside
 `concentration` list, so 424 calls for the same graph. Twice the work for the
 same answer.
 
-A full `assess_graph` run on that case had not returned after fifteen minutes,
-so the total is bounded below and not yet characterized. What is certain is that
-it is far past the loader's 120 seconds while his own path does the same job in
-half the calls.
+A full `assess_graph` run on that case completes in 165 seconds, returning 212
+concentration results, 10 cruxes and 40 circular-support flags. It is not a
+hang. It is roughly 45 seconds past the loader's timeout, and his own CLI path,
+doing half the calls for the same answer, would land under it.
+
+The first attempt here was killed at two minutes and reported as not finishing,
+which established only that it exceeded two minutes. The number above is what
+replaced that.
 
 The shipped `cases/covid/out/concentration.json` records all 212 conclusions of
 the shipped `graph.json`, so his pipeline did complete on this graph. Nothing
