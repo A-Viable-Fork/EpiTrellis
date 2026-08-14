@@ -23,6 +23,8 @@ The v0.1 design was built around a worry that turned out to be misplaced, and it
 
 **The measurement.** Nine encountered objects across seven producers. Every one produced a resolvable, stable referent. Zero failures.
 
+**Superseded, 2026-08-14.** Every figure in this section is stale, and the sentence above contradicts the table below it in the same way the finding did. The authoritative record is `docs/findings/probe-referent-stability.md`: thirteen encountered objects across ten producers, of which eleven produced a verified referent. "Zero failures" was never right even on this document's own table, which records Facebook as producing none. The two that produced none were discarded by the instrument on fetch failure rather than by anything about the objects. The original text is kept because a design document carries no authority over a finding and is expected to be overturned, and because this document is the worked example of drift that the departure record and the workflow spec both point at.
+
 | Producer | Referent | Payload |
 |---|---|---|
 | Substack | canonical, og:url, DOI lifted from a body citation | 10,799 chars, full |
@@ -136,6 +138,8 @@ Deferred, from v0.1: the interchange format stays an append-only event journal w
 ## What the measurement did not cover
 
 Nine objects, one person, one device, one day. Every producer here is one a research-adjacent reader encounters. Absent: TikTok, Instagram, news paywalls, Google Docs, Slack, email, anything geo-varying, and anything from an application offering no share affordance beyond a screenshot.
+
+**Superseded, 2026-08-14.** TikTok and Google Docs are not absent. The finding records both as measured, and listing them here understated the corpus while reading as an honest admission of its limits, which is why it survived several readings. What remains absent is Instagram, Slack, email, news paywalls beyond one, anything geo-varying, and anything offering no share affordance beyond a screenshot. That last category is still the one that could overturn this.
 
 That last category is the one that could still overturn this. The probe measured objects that were shareable, which is a selection on exactly the property being tested. Objects that cannot be shared as a link never entered the sample, and their frequency is unmeasured.
 

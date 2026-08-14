@@ -1,7 +1,7 @@
 ---
 Type: reference
 Purpose: "What is built, what is specified and unbuilt, and what is deliberately deferred, so a reader can tell claims about the system from claims about the plan."
-Depends on: [docs/document-style-guide.md, docs/findings/probe-referent-stability.md]
+Depends on: [docs/document-style-guide.md, docs/findings/probe-referent-stability.md, docs/compost-ledger.md]
 Depended on by: [README.md, docs/departure-from-epistack.md]
 ---
 
@@ -57,7 +57,11 @@ must declare about itself will be learned from the functions people write.
 
 **`verify-docs.py` number checking.** Header and dependency checking is
 achievable now. Checking that cited figures match the journal needs a findings
-pipeline that does not exist. Documents can still drift, and one currently has.
+pipeline that does not exist. Documents can still drift, and one currently has:
+`docs/design/pocket-revised-v0.2.md` cites nine objects across seven producers
+where the finding holds thirteen across ten, and lists TikTok and Google Docs as
+absent from a corpus that measured both. It now carries a dated correction, and
+no script caught either error.
 
 **The self-governance tier.** An operator's policy over their own device.
 Probably a sixth tier in the decomposition, unrecorded.

@@ -17,12 +17,13 @@ if not finds:
 
 kinds, flags, hosts = {}, {}, {}
 for r in finds:
-    kinds[r["kind"]] = kinds.get(r["kind"], 0) + 1
+    kind = r.get("kind", "unknown")
+    kinds[kind] = kinds.get(kind, 0) + 1
     for x in r.get("flags", []): flags[x] = flags.get(x, 0) + 1
     h = r.get("host")
     if h:
         hosts.setdefault(h, [0, 0]); hosts[h][0] += 1
-        if r["kind"] == "stable_referent": hosts[h][1] += 1
+        if kind == "stable_referent": hosts[h][1] += 1
 
 print("\nverdicts")
 for k, v in sorted(kinds.items(), key=lambda x: -x[1]):

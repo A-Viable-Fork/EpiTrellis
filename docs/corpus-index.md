@@ -1,11 +1,17 @@
 ---
 Type: reference
-Purpose: "Every document in the repository, its type, and what it is for, so a reader can find the source of truth for any claim."
-Depends on: [docs/document-style-guide.md]
+Purpose: "Every document under docs/, trellises/ and spec/, plus README.md and CLAUDE.md, with its type and what it is for, so a reader can find the source of truth for any claim."
+Depends on: [docs/document-style-guide.md, spec/function.md, docs/design/pocket-revised-v0.2.md, docs/design/workflow-spec-v0.1.md, trellises/parent-decomposition-v1.5.md, trellises/child-receiver-substrate-v0.1.md, trellises/child-capture-dynamics-v0.1.md, trellises/phone-v1.md]
 Depended on by: [README.md]
 ---
 
 # Corpus Index
+
+This index covers what `verify-docs.py` scans: every `.md` file under `docs/`,
+`trellises/` and `spec/`, plus `README.md` and `CLAUDE.md`. `probe/MANUAL.md` is
+a document in this repository and is deliberately outside that scope, because it
+is operating instructions for the instrument rather than a claim about the
+system, and it carries no typed header.
 
 | Path | Type | For |
 |---|---|---|

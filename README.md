@@ -1,7 +1,7 @@
 ---
 Type: reference
 Purpose: "Entry point. What EpiTrellis is, what has been established by measurement, and where to find the source of truth for any claim."
-Depends on: [docs/corpus-index.md, docs/status-ledger.md, docs/findings/probe-referent-stability.md, spec/function.md]
+Depends on: [docs/corpus-index.md, docs/status-ledger.md, docs/findings/probe-referent-stability.md, docs/departure-from-epistack.md, spec/function.md]
 Depended on by: []
 ---
 
@@ -17,7 +17,7 @@ Early. One measuring instrument runs, four functions run, four checks pass. Ever
 
 What has actually been established, as of August 2026:
 
-- **Referents are stable.** Across thirteen objects encountered in ordinary reading, every one produced a resolvable, normalized address derived locally with no cooperation from the producer. LessWrong, Substack, arXiv, X, Google Docs, YouTube, TikTok, Reddit. This was the thing most likely to break the whole idea, and it did not.
+- **Referents are stable.** Across thirteen objects encountered in ordinary reading over ten producers, eleven produced a verified, normalized address derived locally with no cooperation from the producer. Eight producers yielded referents: LessWrong, Substack, arXiv, X, Google Docs, YouTube, TikTok, Reddit. The other two, Facebook and NYT, were discarded by the instrument rather than by anything about the objects, because the probe throws away a referent when the fetch fails even though the shared URL was in hand. This was the thing most likely to break the whole idea, and it did not.
 - **Payload is the real problem, and it splits three ways.** Not text at all (video). Withheld by the producer (Reddit serves a six-character stub, NYT refuses outright, the Internet Archive cannot rescue a paywall). Behind a client-side render.
 - **Two parties who never coordinated join by hash.** Independently derived referents match across different URL forms. Set intersection, no agreement required.
 - **What travels is small.** Roughly 210 bytes per object. At that size, publishing to five hosts costs nothing, which is why no gradient pulls anyone toward a single one.
@@ -70,7 +70,7 @@ Privacy and functions each caught a real problem on their first run, which is th
 
 ## Where this came from
 
-The FLF EpiStack competition, mid-2026. Twenty-two public repositories, built independently, most of which turn out to be components of one thing nobody was coordinating. Sixteen of them shipped with no license at all, which under default copyright makes a field organized around compounding legally uncompoundable.
+The FLF EpiStack competition, mid-2026. Twenty-two public repositories carrying twenty-one submissions, built independently, most of which turn out to be components of one thing nobody was coordinating. Fifteen of the twenty-two shipped with no license file at all, which under default copyright makes a field organized around compounding legally uncompoundable. Seven carry one: five MIT, one GPL-3.0, one AGPL-3.0. One of the fifteen declares MIT in its README and ships no `LICENSE`, so it counts as unlicensed by file while plainly meaning otherwise, which is its own small argument for checking the file rather than the intent.
 
 `trellises/` holds the research structure: what jobs exist, what varies between implementations, and what is still open. `docs/findings/` holds what the instrument has established, with dates.
 

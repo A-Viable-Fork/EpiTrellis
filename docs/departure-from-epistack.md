@@ -1,13 +1,15 @@
 ---
 Type: reference
 Purpose: "The record of what changed between the EpiStack competition submission and EpiTrellis, with the evidence that forced each change, maintained as further changes occur."
-Depends on: [docs/findings/probe-referent-stability.md, trellises/parent-decomposition-v1.5.md]
+Depends on: [docs/findings/probe-referent-stability.md, trellises/parent-decomposition-v1.5.md, docs/document-style-guide.md, docs/status-ledger.md]
 Depended on by: [README.md, docs/design/pocket-revised-v0.2.md, docs/compost-ledger.md]
 ---
 
 # Departure from EpiStack
 
-EpiStack was submitted to the FLF EpiStack competition in July 2026. EpiTrellis is what survived reading twenty-one other submissions and then measuring the world the design assumed.
+EpiStack was submitted to the FLF EpiStack competition in July 2026. EpiTrellis is what survived reading twenty other submissions and then measuring the world the design assumed.
+
+The population figures throughout this document were recounted from the audit on 2026-08-14 and are now: twenty-two public repositories carrying twenty-one submissions, since the two A-Viable-Fork repositories are one entry, and since `bioc/epistack` and `epistack-app/epistack-legal` are name collisions and were never in the population. Fifteen of the twenty-two carry no license file. Seven carry one: five MIT, one GPL-3.0, one AGPL-3.0. Earlier figures in the entries below are marked where they were wrong and are not removed.
 
 This document is maintained. Each entry names what the submission held, what overturned it, and what survived. Entries are not removed when superseded; a later entry supersedes an earlier one and both stay visible, which is the same discipline the journal applies to findings.
 
@@ -17,7 +19,7 @@ This document is maintained. Each entry names what the submission held, what ove
 
 **Held.** Composition without laundering requires shared invariants. Eleven were stated: claims carry types, standing stays at or below what its supports deliver, grading reads structure and stays blind to who produced a claim, a claim crossing an untyped boundary sits at the floor until locally re-typed, and so on. A kernel satisfying them could compose; one that did not, could not.
 
-**Overturned by.** Twenty-one public submissions built independently, varying on nearly every dimension the eleven fix: grade representation, relation vocabulary, independence measure, crux definition, disagreement representation, verification method, source classification. Several variations are better than the originals. A dimension five people fill five different ways is not a shared requirement, and a rule most competent implementations depart from describes one implementation carrying a universal quantifier.
+**Overturned by.** Twenty-one public submissions built independently, twenty of them by other people, varying on nearly every dimension the eleven fix: grade representation, relation vocabulary, independence measure, crux definition, disagreement representation, verification method, source classification. Several variations are better than the originals. A dimension five people fill five different ways is not a shared requirement, and a rule most competent implementations depart from describes one implementation carrying a universal quantifier.
 
 **Survived.** All eleven, with a different modality. They are preconditions for particular capabilities rather than conditions of participation. Contamination detection is required for corroboration. Meaning pinning is required for native crossing. Neither is required to participate.
 
@@ -53,6 +55,8 @@ Requirements moved to the receiver. A party who needs contamination detection re
 
 **A retraction inside the retraction.** LessWrong was reported as refusing, and that was an artifact of the instrument sending a bare user-agent string. With browser-shaped headers it returned 121,682 characters cleanly. The claim that the site best suited to this substrate was least reachable by it was wrong and is preserved here because it was published.
 
+**Superseded, 2026-08-14.** The paragraph above says thirteen objects across seven producers and every one producing a resolvable normalized address. Both figures were wrong. It was thirteen objects across ten producers, of which eleven produced a verified referent. The two that did not, Facebook and NYT, were discarded by the instrument and not by the objects: the probe records no referent when the fetch fails, so it threw away a shared URL it already held. The overturning here still stands, and it stands on a smaller number than was claimed. See `docs/findings/probe-referent-stability.md` and entry 9 of `docs/compost-ledger.md`.
+
 ---
 
 ## 4. Licensing became segmented
@@ -64,6 +68,8 @@ Requirements moved to the receiver. A party who needs contamination detection re
 **Survived.** Copyleft where a provider could host a closed fork. The change is that one license across all layers is wrong, because the layers have opposite failure modes. A closed spec kills the waist, so the spec is CC0. An openly licensed hosted service invites a fork that publishes nothing, so the application layer is AGPL. License each layer against its own capture risk.
 
 **A consequence discovered afterward.** Running functions as subprocesses over stdin and stdout creates no linking and no derivative-work relationship, so GPL, MIT, proprietary, and unlicensed functions coexist without contaminating each other. The isolation design was chosen for other reasons and turns out to be the licensing answer. Any design where functions link into the host forces one license across the whole ecosystem.
+
+**Superseded, 2026-08-14.** "Sixteen of twenty-three public submissions" above was wrong in both numbers. It is fifteen of twenty-two public repositories with no license file, against seven that carry one: five MIT, one GPL-3.0, one AGPL-3.0. The argument is unchanged and the proportion barely moves. One of the fifteen declares MIT in its README while shipping no `LICENSE` file, which counts as unlicensed under default copyright regardless of what was intended, and is the sharpest small illustration of why the check reads the file.
 
 ---
 
@@ -91,4 +97,4 @@ The self-governance tier, an operator's policy over their own device, is probabl
 
 `scripts/verify-docs.py` does not exist, so documents can still drift from artifacts. Entry 3 above cites thirteen objects while an earlier design document cites nine, and that drift occurred within a day of the document being written.
 
-**Superseded in part, 2026-08-14.** `scripts/verify-docs.py` now exists and runs in CI. The paragraph above stays because it was published. What it got right survives: documents can still drift, because the check reads typed headers and dependency reciprocity and does not read cited figures. The specific drift it names is still present and still unchecked. `docs/design/pocket-revised-v0.2.md` cites nine objects across seven producers while `docs/findings/probe-referent-stability.md` holds thirteen, and that design document also lists TikTok and Google Docs as absent from the corpus when the finding records both as measured.
+**Superseded in part, 2026-08-14.** `scripts/verify-docs.py` now exists and runs in CI. The paragraph above stays because it was published. What it got right survives: documents can still drift, because the check reads typed headers and dependency reciprocity and does not read cited figures. The specific drift it names is still unchecked by any script, and it was worse than a stale count. `docs/design/pocket-revised-v0.2.md` cites nine objects across seven producers while `docs/findings/probe-referent-stability.md` holds thirteen across ten, and the same design document lists TikTok and Google Docs as absent from the corpus when the finding records both as measured. A stale coverage claim reads as a limitation honestly admitted, which makes it harder to notice than a stale number. That document now carries a dated correction pointing at the finding, and the original text stays because a design document is expected to be overturned and the record of it is the point.

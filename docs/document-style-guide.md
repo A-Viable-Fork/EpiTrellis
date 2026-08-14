@@ -7,9 +7,9 @@ Depended on by: [docs/status-ledger.md, docs/compost-ledger.md, docs/departure-f
 
 # Document Style Guide
 
-Every document in `docs/` and `trellises/` carries a typed header. The header is
-not decoration: two checks read it, and a document whose header is wrong fails
-the build.
+Every document under `docs/`, `trellises/` and `spec/`, along with `README.md`
+and `CLAUDE.md`, carries a typed header. The header is not decoration: two checks
+read it, and a document whose header is wrong or missing fails the build.
 
 ## The required header
 
@@ -50,9 +50,14 @@ safe to revise.
 
 `verify-docs.py` enforces:
 
-1. Every document has a well-formed header with all four fields.
-2. Every path in `Depends on` exists, and reciprocally lists this document
-   under `Depended on by`.
+1. Every document in scope has a well-formed header with all four fields. A
+   document with no header at all fails, rather than passing quietly, because
+   omitting the header was otherwise the cheapest way around the first rule.
+2. Every path in `Depends on` exists and reciprocally lists this document under
+   `Depended on by`, and every path in `Depended on by` exists and reciprocally
+   lists this document under `Depends on`. Both directions, because a document
+   claiming dependents that do not claim it back is the same unchecked assertion
+   pointing the other way.
 
 ## The discipline for new documents
 

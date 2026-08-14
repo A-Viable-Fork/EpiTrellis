@@ -14,7 +14,7 @@ v0.1 · 13 August 2026
 
 ## 1. Licensing, segmented by capture risk
 
-The current EpiStack repository is AGPL-3.0, which makes it the least composable entry in a field about composition. Fifteen of twenty-two submissions carry no license at all, four or five are MIT, and one is AGPL. That asymmetry is worth fixing deliberately rather than by picking a single license for everything.
+The current EpiStack repository is AGPL-3.0, which makes it the least composable entry in a field about composition. Fifteen of twenty-two public repositories carry no license file, five are MIT, one is GPL-3.0, and one is AGPL-3.0. That asymmetry is worth fixing deliberately rather than by picking a single license for everything.
 
 One license across the whole repository is wrong because the layers have opposite failure modes. A closed spec kills the waist. An openly-licensed hosted service invites a provider to fork, host, improve, and publish nothing.
 
@@ -152,7 +152,7 @@ Five stages, each with an artifact and a check. The loop is the point; no stage 
 
 The probe has already overturned the first gate of the receiver-substrate child, two of my confident claims, and one of the design's central assumptions, inside a day. That is the loop working. It only keeps working if the trellis updates when the artifact contradicts it, rather than the artifact being adjusted to preserve the trellis.
 
-`verify:docs` is what enforces this mechanically. Documents citing n=9 while the probe holds thirteen encountered objects is drift, and it happened within one day of the document being written. A check that recomputes cited numbers from fixtures catches it without anyone remembering to look.
+`verify:docs` enforces part of this mechanically. It reads typed headers and checks the dependency graph in both directions, and it does not read cited figures at all, which the script says in its own closing output. Documents citing n=9 while the probe holds thirteen encountered objects across ten producers is drift, and it happened within one day of the document being written, and no check has caught it since. The same document also lists TikTok and Google Docs as absent from the corpus while the finding records both as measured, which is a stale coverage claim rather than only a stale number and reads as honesty rather than error. A check that recomputes cited numbers from fixtures would catch the first without anyone remembering to look. Nothing yet proposed catches the second.
 
 ---
 

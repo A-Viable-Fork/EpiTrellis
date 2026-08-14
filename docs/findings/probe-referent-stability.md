@@ -14,8 +14,11 @@ Depended on by: [docs/departure-from-epistack.md, docs/status-ledger.md, docs/de
 
 ## Result
 
-Every encountered object produced a resolvable, normalized referent, derived
-locally with no cooperation from the producer.
+Eleven of thirteen encountered objects produced a verified, normalized referent,
+derived locally with no cooperation from the producer. The remaining two were
+discarded by the instrument rather than by any property of the object. The
+receiver held a good shared URL for both, and the probe records no referent when
+the fetch fails, so it threw away an address it already possessed.
 
 | Producer | Referent | Payload |
 |---|---|---|
@@ -27,8 +30,8 @@ locally with no cooperation from the producer.
 | YouTube | canonical, normalized: share token stripped, mobile redirect resolved | video, not text |
 | TikTok | canonical via share shortlink | video, not text |
 | Reddit | shortlink resolves to canonical comments URL | 6 chars in an 8,459-byte response, 4 of 4 |
-| Facebook | none | HTTP refusal |
-| NYT | none | 403, no archive snapshot, save attempt returned 520 |
+| Facebook | shared URL held, discarded on fetch failure | HTTP refusal |
+| NYT | shared URL held, discarded on fetch failure | 403, no archive snapshot, save attempt returned 520 |
 
 ## What this overturned
 
@@ -49,7 +52,21 @@ reachable by it was wrong.
 application bundle is large and Reddit's response is 8KB with 475 bytes of script.
 It is a refusal that returns 200, now classified `soft_refusal`.
 
+**A third retraction, 2026-08-14.** This document said "Every encountered object
+produced a resolvable, normalized referent" four lines above its own table
+recording two that did not, and the claim propagated to the README, the compost
+ledger, and the departure record. The true reading is eleven of thirteen
+verified, with two discarded by the instrument. The old claim is preserved here
+because it was published, and the failure is recorded as entry 9 of the compost
+ledger.
+
 ## What this does not establish
+
+**The denominator understates.** The probe records no referent when a fetch
+fails, so an object whose address was fine and whose bytes were refused is
+counted as producing nothing. Facebook and NYT are both that case. This is a
+known instrument bug and not a property of the objects, and until it is fixed
+the eleven is a floor rather than a measurement.
 
 The probe measured objects that were shareable, which selects on the property
 being tested. Objects that cannot be shared as a link never entered the sample

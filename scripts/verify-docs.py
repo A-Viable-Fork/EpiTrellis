@@ -4,7 +4,16 @@ graph agrees with itself in both directions.
 
 The common failure is a document that quietly acquires dependents and stops
 being safe to revise. Checking Depends-on against Depended-on-by catches it
-mechanically rather than by anyone remembering."""
+mechanically rather than by anyone remembering.
+
+Both directions are checked. Depends-on must be matched by the target's
+Depended-on-by, and Depended-on-by must be matched by the target's Depends-on,
+because a document that claims dependents nobody claims back is the same
+unverified assertion pointing the other way.
+
+A document with no typed header fails rather than warning. The style guide
+says a wrong header fails the build, and omitting the header entirely was the
+cheap way around that."""
 import os, re, sys
 
 ROOT = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
@@ -28,7 +37,7 @@ def parse(path):
         head[k] = [x.strip() for x in v.strip("[]").split(",") if x.strip()]
     return head
 
-docs, fails, warns = {}, [], []
+docs, fails = {}, []
 
 targets = list(EXTRA)
 for d in SCAN:
@@ -44,7 +53,7 @@ for rel in sorted(set(targets)):
         continue
     head = parse(path)
     if head is None:
-        warns.append("%s: no typed header" % rel)
+        fails.append("%s: no typed header" % rel)
         continue
     missing = [f for f in FIELDS if f not in head]
     if missing:
@@ -64,10 +73,11 @@ for rel, head in docs.items():
     for dep in head["Depended on by"]:
         if not os.path.exists(os.path.join(ROOT, dep)):
             fails.append("%s: depended on by %s which does not exist" % (rel, dep))
+        elif dep in docs and rel not in docs[dep]["Depends on"]:
+            fails.append("%s claims %s as a dependent, but %s does not list it "
+                         "under 'Depends on'" % (rel, dep, dep))
 
 print("%d document(s) with typed headers" % len(docs))
-for w in warns:
-    print("  note: " + w)
 if fails:
     print("\nDOC CHECK FAILED\n")
     for f in fails: print("  " + f)

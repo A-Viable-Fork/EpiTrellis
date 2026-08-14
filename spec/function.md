@@ -51,7 +51,7 @@ Deliberately, and each omission is load-bearing.
 
 **Language.** Any executable.
 
-**Manifest.** What a function declares about itself is a separate, forkable vocabulary. See `vocabulary.md`. A function with no manifest is valid and unlocks nothing that a manifest would unlock.
+**Manifest.** What a function declares about itself is a separate, forkable vocabulary, and it is deliberately not defined yet. What a function should declare will be learned from the functions people write. A function with no manifest is valid and unlocks nothing that a manifest would unlock.
 
 **Capability declaration.** Any sandbox is applied by the loader from outside. A declaration the loader enforces is true regardless of the author's honesty; a declaration nobody enforces is a producer assertion and worth nothing.
 

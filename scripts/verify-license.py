@@ -1,10 +1,13 @@
 #!/usr/bin/env python3
 """Every function directory declares a license.
 
-Sixteen of twenty-three submissions to the competition this project came out
-of shipped with no license, which under default copyright makes them legally
-uncompoundable. A field organized around compounding produced artifacts
-nobody may build on. This check exists so that does not happen here."""
+Fifteen of the twenty-two public repositories in the competition this project
+came out of shipped with no license file, which under default copyright makes
+them legally uncompoundable. A field organized around compounding produced
+artifacts nobody may build on. This check exists so that does not happen here.
+
+One of the fifteen declares MIT in its README and ships no LICENSE file, which
+is why this check looks for the file and not for an intention."""
 import os, sys
 
 ROOT = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))

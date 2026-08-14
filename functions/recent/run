@@ -9,6 +9,6 @@ for line in sys.stdin:
         try: rows.append(json.loads(line))
         except Exception: pass
 for r in [x for x in rows if x.get("event") == "finding"][-n:]:
-    print("%-22s %-34s %s" % (r["kind"][:21],
+    print("%-22s %-34s %s" % (r.get("kind", "unknown")[:21],
         (",".join(r.get("flags", [])) or "clean")[:33],
         ((r.get("title") or r.get("host") or "")[:40])))

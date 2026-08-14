@@ -60,6 +60,11 @@ thirteen of thirteen encountered objects produced a resolvable referent.
 Replaced by payload acquisition, which splits three ways.
 Reactivation: an object population where referents do not hold. The probe
 measured objects that were shareable, which selects on the property tested.
+*Corrected 2026-08-14: it was eleven of thirteen verified, not thirteen of
+thirteen. Two were discarded by the instrument, which records no referent when
+the fetch fails, and not by any property of the objects. The kill stands on the
+corrected number. The original text is left above because the overstatement is
+itself an entry, filed as 9 below.*
 
 **7. Attack conversion as a separate function.** 2026-08-12. Sybil dissolution,
 where forging N corroborators costs N genuine contributions and the attacker
@@ -72,3 +77,13 @@ sovereignty. Killed because two builds means one is real and the other rots, and
 the one with users will be the real one.
 Reactivation: none. The replacement is storage as a contract the user selects,
 so one build serves both.
+
+**9. The headline of a document about not overclaiming, overclaimed.**
+2026-08-14. `docs/findings/probe-referent-stability.md` asserted that every
+encountered object produced a resolvable referent, four lines below its own table
+recording two that did not. The claim propagated to three other documents.
+Killed by an outside reading of the tree by a party with no attachment to it, in
+one pass. The author had read the document repeatedly without seeing it.
+Reactivation: none. The residue is that internal review does not catch this
+class, and the checks did not either, because no check compares a prose claim
+against a table in the same file.
