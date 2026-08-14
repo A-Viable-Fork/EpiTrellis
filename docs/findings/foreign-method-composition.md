@@ -2,7 +2,7 @@
 Type: finding
 Purpose: "What vendoring an independently designed competition method established about this substrate, which is that the vendoring mechanism works and composition remains untested because the journal had nothing to offer it."
 Depends on: [functions/concentration/GAP.md, functions/concentration/ATTRIBUTION.md]
-Depended on by: [docs/corpus-index.md, docs/status-ledger.md]
+Depended on by: [docs/corpus-index.md, docs/status-ledger.md, docs/findings/foreign-method-input-shapes.md]
 ---
 
 # Finding: Foreign Method Composition
@@ -137,6 +137,11 @@ attempted and not tested.
 built methods want the same claim-graph shape is unmeasured, and it is the
 question that decides whether capability supply is the bottleneck here or
 whether the competition built for a layer above the one this repository built.
+
+*Answered in part, 2026-08-14, by `docs/findings/foreign-method-input-shapes.md`:
+of five methods read, two more want a claim graph, one wants reviewer-panel
+output, and one wants a document corpus this journal still could not supply. The
+paragraph above stays because the n=1 caveat on this finding is unchanged.*
 
 ## A scaling note, for whoever wires this to a real journal
 

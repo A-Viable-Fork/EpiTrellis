@@ -1,7 +1,7 @@
 ---
 Type: reference
 Purpose: "Every document under docs/, trellises/ and spec/, plus README.md and CLAUDE.md, with its type and what it is for, so a reader can find the source of truth for any claim."
-Depends on: [docs/document-style-guide.md, docs/findings/foreign-method-composition.md, spec/function.md, docs/design/pocket-revised-v0.2.md, docs/design/workflow-spec-v0.1.md, trellises/parent-decomposition-v1.5.md, trellises/child-receiver-substrate-v0.1.md, trellises/child-capture-dynamics-v0.1.md, trellises/phone-v1.md]
+Depends on: [docs/document-style-guide.md, docs/findings/foreign-method-composition.md, docs/findings/foreign-method-input-shapes.md, spec/function.md, docs/design/pocket-revised-v0.2.md, docs/design/workflow-spec-v0.1.md, trellises/parent-decomposition-v1.5.md, trellises/child-receiver-substrate-v0.1.md, trellises/child-capture-dynamics-v0.1.md, trellises/phone-v1.md]
 Depended on by: [README.md]
 ---
 
@@ -25,6 +25,7 @@ system, and it carries no typed header.
 | `docs/corpus-index.md` | reference | This document |
 | `docs/findings/probe-referent-stability.md` | finding | What the probe established, with n and date |
 | `docs/findings/foreign-method-composition.md` | finding | Vendoring a foreign method: mechanism confirmed, composition untested |
+| `docs/findings/foreign-method-input-shapes.md` | finding | What five competition methods consume, and whether the journal could supply it |
 | `docs/design/pocket-revised-v0.2.md` | design | The phone application after measurement |
 | `docs/design/workflow-spec-v0.1.md` | design | Licensing, layout, and the recalibration loop |
 | `trellises/parent-decomposition-v1.5.md` | reference | The function decomposition and its open sorries |
