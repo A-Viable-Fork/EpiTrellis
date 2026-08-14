@@ -55,14 +55,15 @@ Subprocess isolation is also the licensing answer: no linking, no derivative wor
 ## Checks
 
 ```sh
-python3 scripts/verify-privacy.py     # first, always
-python3 scripts/verify-license.py
-python3 scripts/verify-functions.py
-python3 scripts/verify-docs.py
-python3 scripts/verify-vendor.py
+python3 scripts/verify-privacy.py           # first, always
+for f in scripts/verify-*.py; do python3 "$f" || break; done
 ```
 
-All five must pass before any commit. Privacy and functions each caught a real problem on their first run, which is the only reason to trust either. `verify-docs.py` checks typed headers and dependency reciprocity in both directions and does not check figures cited in prose, so documents can still drift. `verify-vendor.py` checks that vendored foreign code still has the bytes it was vendored with, because the composition claim rests on nothing else.
+Every check in `scripts/` must pass before any commit. Privacy runs first because nothing else matters if real capture data has entered the tree.
+
+This section names no count and lists no inventory on purpose. `scripts/` is the authority for which checks exist, and a copy of that list kept here went stale twice: once saying three after a fourth landed, and once asserting in the same document that `verify-docs.py` was required and that it did not exist. See entry 10 of `docs/compost-ledger.md`.
+
+Privacy and functions each caught a real problem on their first run, which is the only reason to trust either.
 
 ## Naming
 
@@ -70,7 +71,7 @@ Entrypoints are named for the act, not the code. Reading the list of targets sho
 
 ## What is unfinished, deliberately
 
-- `scripts/verify-docs.py` does not exist yet. It should recompute every number cited in `docs/` and `trellises/` from fixtures, so documents cannot drift from artifacts. It will fail on first run because several documents are stale.
+- Recomputing every number cited in `docs/` and `trellises/` from fixtures, so documents cannot drift from artifacts. `scripts/verify-docs.py` reads typed headers and dependency reciprocity and does not read cited figures, which it says in its own output. Number checking needs a findings pipeline nobody has built.
 - Function distribution, registries, manifests. Local loading only for now.
 - The self-governance tier: an operator's policy over their own device. Probably a sixth tier in the decomposition, currently unrecorded.
 

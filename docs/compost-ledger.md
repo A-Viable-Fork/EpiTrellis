@@ -87,3 +87,82 @@ one pass. The author had read the document repeatedly without seeing it.
 Reactivation: none. The residue is that internal review does not catch this
 class, and the checks did not either, because no check compares a prose claim
 against a table in the same file.
+
+**10. Trusting a document to hold a copy of a fact about the tree.**
+2026-08-14. Not an approach anyone proposed, which is why it took four instances
+to see: it is what the repository does by default every time a document
+describes the system rather than the world.
+
+The shape. A document holds a copy of a fact whose authority lives elsewhere in
+the tree, and the authority moves underneath it. Findings about the world do not
+drift this way, because a measurement is finished. Documents about the system
+drift because the system is not.
+
+Four instances, three of them that shape:
+
+*Entry 9's universal quantifier.* The referent finding asserted that every
+encountered object produced a resolvable referent, four lines above its own table
+recording two that did not. This one is not the copy shape. It is a claim
+contradicted by evidence in the same file, and it is filed here because it was
+found in the same pass and shares the residue.
+
+*`docs/design/pocket-revised-v0.2.md`'s coverage claim.* It listed TikTok and
+Google Docs as absent from the corpus while the finding recorded both as
+measured. A stale coverage claim reads as a limitation honestly admitted, which
+is what let it survive several readings.
+
+*CLAUDE.md's check count.* It listed three checks and said all three must pass,
+after a fourth had landed and was running in CI.
+
+*CLAUDE.md asserting `scripts/verify-docs.py` did not exist.* Written when it did
+not, left standing after it did, and still live in the tree for two commits after
+the same document's Checks section had already been corrected to require it. One
+document, two sections, opposite claims about one file.
+
+Killed by: `scripts/verify-selfdescription.py`, and by deleting the copies rather
+than maintaining them. Counts of checks and inventories of function names now
+point at `scripts/` and `functions/` instead of restating them. A pointer cannot
+go stale, and the count argued nothing anywhere.
+
+What the check catches, established by running it against the commits where each
+instance was live rather than by assertion:
+
+| Instance | Caught | By which half |
+|---|---|---|
+| CLAUDE.md says `verify-docs.py` does not exist | yes, at every commit where it was live | negation direction |
+| CLAUDE.md check count of three | no | neither |
+| pocket-revised coverage claim | no | neither |
+| Entry 9's universal quantifier | listed for review, not caught | advisory half |
+
+Running it against history also failed the check itself. At `9cfad09`, where
+CLAUDE.md correctly said `verify-docs.py` did not exist yet and it correctly did
+not, the existence direction reported the true statement as a failure. A document
+is allowed to name what is not built, which is what a deferral list is for. The
+fix exempts a path from the existence direction when the sentence declares it
+absent, since the other direction already covers the case where such a path turns
+out to be present. Neither half had been run against history before that, and the
+error would have shipped.
+
+**This is not solved.** Two of four are caught by nothing. The check count is
+caught only because the count was deleted, which fixes the instance and not the
+class: any future prose count of anything is invisible to both halves. The
+coverage claim is caught by neither half and no check was proposed for it,
+because a claim that a corpus lacks something is a claim about the world and the
+only authority is the journal, which is exactly the deferred number checking.
+The advisory half produces a review queue of 55 lines, 27 of them in the
+trellises where universals are the house style and almost all of them sound, and
+a queue nobody reads is worth nothing. It did list entry 9's exact sentence at
+the commit where that claim was live, which is the only evidence that the
+advisory half is pointed at anything real.
+
+Reactivation: not applicable, since nothing was killed that could return. What
+would close it is the findings pipeline that recomputes cited figures from the
+journal, which remains deferred.
+
+A process note rather than a thing to build. Entry 9 and the check count were
+both found by a reader coming to the tree cold, after the author had read those
+documents repeatedly without seeing either. Two data points saying internal
+review does not catch this class. The step that follows is a cold read before any
+push touching a self-describing document, done by something that has not been
+editing it. Recorded here rather than automated, because automating it is what
+produced the illusion of coverage the last two times.

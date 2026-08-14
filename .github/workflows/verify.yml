@@ -29,3 +29,7 @@ jobs:
       # nothing else in this workflow would notice a tidy-up.
       - name: vendor
         run: python3 scripts/verify-vendor.py
+
+      # Documents that describe the system, checked against the system.
+      - name: selfdescription
+        run: python3 scripts/verify-selfdescription.py

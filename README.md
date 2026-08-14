@@ -13,7 +13,7 @@ The bet is that if that works well enough, the phone stops being a set of apps y
 
 ## Status
 
-Early. One measuring instrument runs, five functions run, five checks pass. Everything else is design.
+Early. One measuring instrument runs, the functions in `functions/` run, and every check in `scripts/` passes. Everything else is design.
 
 What has actually been established, as of August 2026:
 
@@ -63,6 +63,7 @@ python3 scripts/verify-license.py     # every function declares one
 python3 scripts/verify-functions.py   # every function runs, and tolerates events it does not know
 python3 scripts/verify-docs.py        # every document carries a typed header, and the dependency graph agrees with itself
 python3 scripts/verify-vendor.py      # vendored foreign code still has the bytes it was vendored with
+python3 scripts/verify-selfdescription.py  # documents that describe the tree agree with the tree
 ```
 
 Privacy runs first and alone. The journal holds reading history and share links that carry access rather than merely address; git history is not deletable in practice, so one real export used once as a convenient fixture is permanent. Fixtures are generated and carry a `synthetic` marker.

@@ -8,8 +8,9 @@ Depended on by: [docs/status-ledger.md, docs/compost-ledger.md, docs/departure-f
 # Document Style Guide
 
 Every document under `docs/`, `trellises/` and `spec/`, along with `README.md`
-and `CLAUDE.md`, carries a typed header. The header is not decoration: two checks
-read it, and a document whose header is wrong or missing fails the build.
+and `CLAUDE.md`, carries a typed header. The header is not decoration:
+`scripts/verify-docs.py` reads it, and a document whose header is wrong or
+missing fails the build.
 
 ## The required header
 
@@ -46,9 +47,7 @@ They are maintained separately and checked against each other, because the
 common failure is a document that quietly acquires dependents and stops being
 safe to revise.
 
-## The two checks
-
-`verify-docs.py` enforces:
+## What verify-docs.py enforces
 
 1. Every document in scope has a well-formed header with all four fields. A
    document with no header at all fails, rather than passing quietly, because

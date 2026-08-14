@@ -10,9 +10,9 @@ Depended on by: [README.md, docs/departure-from-epistack.md]
 ## In one read
 
 A measuring instrument runs on a phone with no app and no store. A loader runs
-five functions discovered by presence and identified by hash. Five checks pass
-and two of them caught real problems on their first run. Everything else is
-specified, deferred, or open.
+the functions in `functions/`, discovered by presence and identified by hash.
+Every check in `scripts/` passes, and two of them caught real problems on their
+first run. Everything else is specified, deferred, or open.
 
 ## How to read this ledger
 
@@ -31,7 +31,7 @@ A claim not appearing here is not a claim about this system.
 | Capture via share sheet, no producer cooperation | `probe/probe.py`, 13 objects |
 | Archive fallback with consent and capability-URL warning | `probe/probe.py` |
 | Function loader: discovery, hashing, subprocess invocation | `scripts/verify-functions.py` |
-| Five functions: report, recent, bundle, join, concentration | `scripts/verify-functions.py` |
+| Every function in `functions/` runs against the fixture | `scripts/verify-functions.py` |
 | Vendoring mechanism: foreign code sits in the tree keeping its bytes and its license, and is invoked | `scripts/verify-vendor.py`, `functions/concentration/` |
 | Vendored bytes are unchanged since vendoring | `scripts/verify-vendor.py` |
 | Privacy gate on real capture data | `scripts/verify-privacy.py` |
@@ -39,6 +39,7 @@ A claim not appearing here is not a claim about this system.
 | Unknown-event tolerance | `scripts/verify-functions.py` |
 | Typed header on every document | `scripts/verify-docs.py` |
 | Dependency reciprocity, Depends-on to Depended-on-by | `scripts/verify-docs.py` |
+| Paths named in documents exist, and paths called absent do not | `scripts/verify-selfdescription.py` |
 
 ## Specified, not built
 
