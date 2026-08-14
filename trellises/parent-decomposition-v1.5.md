@@ -1,3 +1,10 @@
+---
+Type: reference
+Purpose: "The function decomposition, its stratified core, and its open sorries."
+Depends on: [docs/document-style-guide.md]
+Depended on by: [docs/corpus-index.md, docs/departure-from-epistack.md]
+---
+
 # EPISTEMIC SUBSTRATE DECOMPOSITION TRELLIS
 
 **Archetype:** Creative-Primary, Theory-building secondary

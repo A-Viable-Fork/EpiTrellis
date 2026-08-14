@@ -1,3 +1,10 @@
+---
+Type: reference
+Purpose: "Entry point. What EpiTrellis is, what has been established by measurement, and where to find the source of truth for any claim."
+Depends on: [docs/corpus-index.md, docs/status-ledger.md, docs/findings/probe-referent-stability.md, spec/function.md]
+Depended on by: []
+---
+
 # Epitrellis
 
 Your phone's apps each hold your stuff in their own walled garden: your reading, your notes, and what other people thought about the same article all live in separate boxes that don't talk to each other. This turns that around. The things you encounter belong to you, on your own device, and anyone can add a tool that does something useful with them, without needing permission from the app it came from.
@@ -6,7 +13,7 @@ The bet is that if that works well enough, the phone stops being a set of apps y
 
 ## Status
 
-Early. One measuring instrument runs, four functions run, three checks pass. Everything else is design.
+Early. One measuring instrument runs, four functions run, four checks pass. Everything else is design.
 
 What has actually been established, as of August 2026:
 
@@ -54,11 +61,12 @@ Subprocess isolation is also the licensing answer: running a program as a subpro
 python3 scripts/verify-privacy.py     # no real capture data in the tree
 python3 scripts/verify-license.py     # every function declares one
 python3 scripts/verify-functions.py   # every function runs, and tolerates events it does not know
+python3 scripts/verify-docs.py        # every document carries a typed header, and the dependency graph agrees with itself
 ```
 
 Privacy runs first and alone. The journal holds reading history and share links that carry access rather than merely address; git history is not deletable in practice, so one real export used once as a convenient fixture is permanent. Fixtures are generated and carry a `synthetic` marker.
 
-Both checks caught real problems on their first run, which is the only reason to trust either.
+Privacy and functions each caught a real problem on their first run, which is the only reason to trust either. `verify-docs.py` checks headers and dependency reciprocity; it does not yet check cited figures against the journal, so documents can still drift.
 
 ## Where this came from
 

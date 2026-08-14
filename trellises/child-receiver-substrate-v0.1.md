@@ -1,3 +1,10 @@
+---
+Type: reference
+Purpose: "The implementation program: a receiver-owned substrate on personal devices."
+Depends on: [docs/document-style-guide.md]
+Depended on by: [docs/corpus-index.md]
+---
+
 # RECEIVER SUBSTRATE TRELLIS
 
 **Archetype:** Operational, Normative secondary

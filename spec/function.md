@@ -1,3 +1,10 @@
+---
+Type: specification
+Purpose: "The function calling convention: an executable over stdin and stdout, identified by the hash of its file, discovered by presence."
+Depends on: []
+Depended on by: [README.md, CLAUDE.md, docs/corpus-index.md]
+---
+
 # The Function Contract
 
 **License: CC0-1.0.** This is the waist. A format nobody can freely implement is not a waist.

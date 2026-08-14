@@ -1,3 +1,10 @@
+---
+Type: specification
+Purpose: "Standing rules binding on anyone or anything editing this repository, including the privacy gate, the append-only discipline, and what is deliberately deferred."
+Depends on: [spec/function.md, docs/document-style-guide.md]
+Depended on by: []
+---
+
 # CLAUDE.md
 
 Standing context for Claude Code. Read this before touching anything.

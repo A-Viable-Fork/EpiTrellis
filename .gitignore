@@ -8,14 +8,14 @@ bundle.json
 trellis-probe/
 trellis-export/
 
-# The synthetic fixtures are generated, carry "synthetic": true, and are the
-# only journals in the tree that may be committed. The rules above would
-# otherwise swallow them, leaving CI with no fixture to run the functions
-# against. verify-privacy.py is what actually guards this directory.
-!fixtures/synthetic/*.ndjson
-
 __pycache__/
 *.pyc
 .venv/
 node_modules/
 .DS_Store
+
+# The synthetic fixtures are generated, carry "synthetic": true, and are the
+# only journals in the tree that may be committed. The rules above would
+# otherwise swallow them, leaving CI with no fixture to run the functions
+# against. verify-privacy.py is what actually guards this directory.
+!fixtures/synthetic/*.ndjson

@@ -1,3 +1,10 @@
+---
+Type: reference
+Purpose: "Operator self-governance over their own device. Candidate sixth tier."
+Depends on: [docs/document-style-guide.md]
+Depended on by: [docs/corpus-index.md]
+---
+
 # PERSONAL DEVICE TRELLIS: PHONE
 
 **Archetype:** Self-Governance (proposed new archetype), Engineering-secondary

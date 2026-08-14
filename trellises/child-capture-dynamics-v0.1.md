@@ -1,3 +1,10 @@
+---
+Type: reference
+Purpose: "The contestability program: whether capability provision stays contestable."
+Depends on: [docs/document-style-guide.md]
+Depended on by: [docs/corpus-index.md]
+---
+
 # CAPTURE DYNAMICS TRELLIS
 
 **Archetype:** Operational, Normative secondary
