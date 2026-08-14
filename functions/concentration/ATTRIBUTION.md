@@ -18,6 +18,13 @@ Nothing else was taken. Both modules import only `json`, `os`, `collections`
 and `math`, so the upstream `requirements.txt` describes the rest of that
 repository and not what is vendored here.
 
+Those three hashes are re-verified on every run of `scripts/verify-vendor.py`,
+which is in CI. A reformat, a lint pass, or a well-meant repair of the awkward
+import would otherwise leave the composition claim standing in these documents
+while making it false in the tree. If a vendored file is ever deliberately
+changed, it is a different method: it needs a new upstream commit hash here, not
+an updated expectation in the check.
+
 **License.** MIT. `LICENSE` in this directory is the upstream root `LICENSE`
 copied unchanged, Copyright (c) 2026 Eric Kyalo. Upstream carries no per-file
 headers, so the root file is what covers `src/`. The wrapper `run` in this

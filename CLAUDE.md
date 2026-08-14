@@ -58,9 +58,11 @@ Subprocess isolation is also the licensing answer: no linking, no derivative wor
 python3 scripts/verify-privacy.py     # first, always
 python3 scripts/verify-license.py
 python3 scripts/verify-functions.py
+python3 scripts/verify-docs.py
+python3 scripts/verify-vendor.py
 ```
 
-All three must pass before any commit. Both privacy and functions caught real problems on their first run, which is the only reason to trust either.
+All five must pass before any commit. Privacy and functions each caught a real problem on their first run, which is the only reason to trust either. `verify-docs.py` checks typed headers and dependency reciprocity in both directions and does not check figures cited in prose, so documents can still drift. `verify-vendor.py` checks that vendored foreign code still has the bytes it was vendored with, because the composition claim rests on nothing else.
 
 ## Naming
 

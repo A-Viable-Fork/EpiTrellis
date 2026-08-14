@@ -1,7 +1,7 @@
 ---
 Type: reference
 Purpose: "What is built, what is specified and unbuilt, and what is deliberately deferred, so a reader can tell claims about the system from claims about the plan."
-Depends on: [docs/document-style-guide.md, docs/findings/probe-referent-stability.md, docs/compost-ledger.md]
+Depends on: [docs/document-style-guide.md, docs/findings/probe-referent-stability.md, docs/compost-ledger.md, docs/findings/foreign-method-composition.md]
 Depended on by: [README.md, docs/departure-from-epistack.md]
 ---
 
@@ -10,7 +10,7 @@ Depended on by: [README.md, docs/departure-from-epistack.md]
 ## In one read
 
 A measuring instrument runs on a phone with no app and no store. A loader runs
-five functions discovered by presence and identified by hash. Four checks pass
+five functions discovered by presence and identified by hash. Five checks pass
 and two of them caught real problems on their first run. Everything else is
 specified, deferred, or open.
 
@@ -32,7 +32,8 @@ A claim not appearing here is not a claim about this system.
 | Archive fallback with consent and capability-URL warning | `probe/probe.py` |
 | Function loader: discovery, hashing, subprocess invocation | `scripts/verify-functions.py` |
 | Five functions: report, recent, bundle, join, concentration | `scripts/verify-functions.py` |
-| A foreign method runs unmodified over the journal, and returns nothing | `functions/concentration/`, see its `GAP.md` |
+| Vendoring mechanism: foreign code sits in the tree keeping its bytes and its license, and is invoked | `scripts/verify-vendor.py`, `functions/concentration/` |
+| Vendored bytes are unchanged since vendoring | `scripts/verify-vendor.py` |
 | Privacy gate on real capture data | `scripts/verify-privacy.py` |
 | License presence per function | `scripts/verify-license.py` |
 | Unknown-event tolerance | `scripts/verify-functions.py` |
