@@ -1031,6 +1031,35 @@ CONFLICT_PAIR = frozenset({"stable_referent", "producer_refused"})
 CONFLICT_RULE = "stable_referent with producer_refused"
 
 
+# A short, literal list of addresses where possession of the link is the
+# access. Unlisted by URL rather than protected by a login, so handing the
+# address to anyone hands them the thing.
+#
+# This is a heuristic and it will miss. It is a list of shapes seen in one
+# corpus, not a rule about what a capability is, and there is no way to tell
+# from a URL alone whether the far end checks who is asking. It warns; it never
+# blocks. `scripts/verify-privacy.py` keeps its own copy for the repository,
+# which is a different job on a different tree.
+CAPABILITY_PATTERNS = [
+    (re.compile(r"claude\.ai/share/", re.I), "Claude share link"),
+    # The account segment is load-bearing: a real shared Docs URL is
+    # /document/u/0/d/... and a pattern without the optional u/N/ misses it.
+    (re.compile(r"docs\.google\.com/[a-z]+/(?:u/\d+/)?d/", re.I), "Google Docs unlisted document"),
+    (re.compile(r"drive\.google\.com/(?:u/\d+/)?(file/d/|drive/folders/)", re.I), "Google Drive unlisted item"),
+    (re.compile(r"reddit\.com/r/[^/\s]+/s/", re.I), "Reddit share shortlink"),
+    (re.compile(r"dropbox\.com/(s|scl)/", re.I), "Dropbox share link"),
+    (re.compile(r"[?&](token|auth|key|secret)=[A-Za-z0-9_-]{10,}", re.I), "URL carrying a token"),
+]
+
+
+def capability_reason(url):
+    """Why this address might be a capability, or None."""
+    for rx, why in CAPABILITY_PATTERNS:
+        if rx.search(url or ""):
+            return why
+    return None
+
+
 # ---------------------------------------------------------------- redaction
 
 def redactions(rows):
@@ -1404,6 +1433,31 @@ def bundle():
         print("Multiplicity is not contradiction: only this one pair is")
         print("counted as conflicting, and the rest may be several true")
         print("things about several encounters.")
+
+    flagged = []
+    for o in out["objects"]:
+        why = capability_reason(o["ref"] or "")
+        if not why:
+            for u in (o["alt"] or {}).values():
+                why = capability_reason(u)
+                if why:
+                    break
+        if why:
+            flagged.append((o["h"], o["ref"], why))
+    if flagged:
+        print("\n%d object(s) in this bundle look like capability links, where"
+              % len(flagged))
+        print("possession of the address is the access. This file is about to")
+        print("be handed to someone.")
+        for h, ref, why in flagged:
+            print("  %s  %s" % (h, why))
+            print("     %s" % ref)
+        print("\nRedact any you did not mean to hand over:")
+        print("  probe.py redact %s" % " ".join(h for h, _, _ in flagged))
+        print("\nThis is a heuristic over a short list of known shapes. It will")
+        print("miss capabilities it has not been taught, and nothing about a URL")
+        print("says whether the far end checks who is asking. Absence of a")
+        print("warning here is not a clearance.")
 
     print("\nwritten to Download/trellis-export/bundle.json")
 

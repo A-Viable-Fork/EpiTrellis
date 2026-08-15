@@ -237,6 +237,26 @@ A **file share** has a reference row carrying no address, because the payload ar
 
 `bundle` prints both counts and records them in `bundle.json` under `excluded`, alongside `findings`, the total it was working from. On the first corpus that reads 19 of 28, with 7 excluded for having no address and 2 for having no reference row. Those 9 are the hypothesis break the probe exists to measure, not a gap in the export, and a bundle that dropped them silently would understate its own denominator.
 
+### Capability links are flagged at export
+
+`bundle` checks every address it is about to export against a short list of
+shapes where possession of the link is the access: `claude.ai/share/`, Google
+Docs and Drive unlisted items, Reddit share shortlinks, Dropbox share links, and
+URLs carrying a token parameter. It names the objects and prints a ready
+`probe.py redact` line for them.
+
+It warns. It never blocks, because deciding what you may hand to whom is yours.
+
+**It is a heuristic and it will miss.** It is a list of shapes seen in one
+corpus, not a rule about what a capability is, and nothing about a URL says
+whether the far end checks who is asking. Absence of a warning is not a
+clearance. The list lives in one place near the top of `probe.py`, as
+`CAPABILITY_PATTERNS`, so adding a shape is one line.
+
+The Google patterns allow an optional account segment, because a real shared
+document URL is `/document/u/0/d/…` and a pattern without it misses exactly the
+case this was written for.
+
 ### Keeping an object out of an export
 
 The journal is private and stays on the device. Bundles leave. Two commands, and
