@@ -17,7 +17,9 @@ A receiver-owned substrate for things you encounter. Objects are addressed local
 
 **Never commit real capture data.** The journal holds reading history and URLs that carry access rather than merely address: `claude.ai/share/`, Google Docs `/d/` ids, Reddit `/s/` shortlinks, tokens in query strings. Git history is not deletable in practice, so one real export used once as a convenient fixture is permanent. Fixtures are generated and carry `"synthetic": true`. `scripts/verify-privacy.py` enforces this and runs first in CI. Do not weaken it to make a test pass.
 
-**The journal is append-only.** Never rewrite, never delete, never reorder. A superseded finding stays visible beside its replacement. Several findings in the corpus are wrong and preserved on purpose, because the record of having been wrong is part of the evidence.
+**The journal is append-only, with one named exception.** Never rewrite, never delete, never reorder. A superseded finding stays visible beside its replacement. Several findings in the corpus are wrong and preserved on purpose, because the record of having been wrong is part of the evidence.
+
+The exception is `probe.py purge`, added 2026-08-15, and it is the only code anywhere permitted to remove a row. It exists because an unlisted link is a capability rather than an address, so a journal holding one is the disclosure and excluding it from exports does not undo that. It deletes rows for named captures, appends a record saying a rewrite happened and how many rows went without saying what they were, requires a typed confirmation, and refuses to run non-interactively. The guarantee it preserves is not that nothing is removed but that nothing is removed without saying so. Do not add a second exception; extend that one or leave the rows alone. See entry 8a of `docs/compost-ledger.md`.
 
 **Functions must tolerate unknown event types.** The journal grows and functions do not update in lockstep. A function that crashes on an event it does not recognize is broken. `verify-functions.py` tests this by feeding every function a synthetic unknown event.
 

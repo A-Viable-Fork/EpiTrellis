@@ -237,6 +237,49 @@ A **file share** has a reference row carrying no address, because the payload ar
 
 `bundle` prints both counts and records them in `bundle.json` under `excluded`, alongside `findings`, the total it was working from. On the first corpus that reads 19 of 28, with 7 excluded for having no address and 2 for having no reference row. Those 9 are the hypothesis break the probe exists to measure, not a gap in the export, and a bundle that dropped them silently would understate its own denominator.
 
+### Keeping an object out of an export
+
+The journal is private and stays on the device. Bundles leave. Two commands, and
+the difference between them matters.
+
+**`probe.py redact <capture_id|object_hash> ...`** excludes an object from every
+future `bundle` and `export`. Nothing is deleted. A `redaction` event is
+appended, the rows stay where they are, and the bundle reports the count of
+redacted objects alongside the other exclusions, because an export has to state
+its own denominator. `probe.py unredact ...` reverses it with a further event,
+so the sequence stays visible rather than the earlier decision disappearing.
+
+Either a capture id or an object hash works. A bundle names objects by hash and
+never by capture id, so requiring the capture id would mean the thing you are
+looking at cannot be named.
+
+One redacted sighting redacts the whole object, including sightings that were
+not themselves redacted. A partially exported object is still exported.
+
+**`probe.py purge <capture_id|object_hash> ...`** deletes rows. This is the one
+place the append-only rule is broken, and it is broken on purpose.
+
+Redaction cannot help when the address itself is the disclosure. An unlisted
+link is a capability: a `claude.ai/share/` URL, a Google Docs `/d/` id, a
+Dropbox share link. Possession of the address is the access, so a journal
+holding one is the problem, not merely an export of it.
+
+Purge rewrites the journal without the named captures and appends a record
+saying that a rewrite happened, when, and how many rows went. It does not record
+what they were, because recording them would defeat the purpose. **There is no
+backup**, for the same reason.
+
+What is given up is that no bytes are ever removed. What is kept is that the
+record cannot silently lose things.
+
+It asks for `PURGE` typed in full and refuses to run non-interactively, so a
+widget or a batch script cannot trigger it.
+
+**Blobs are not touched.** Bodies under `~/trellis-probe/blobs/` are
+content-addressed and shared, and purge does not remove them. If a payload
+rather than an address is the concern, delete the blob yourself; the journal
+survives without it.
+
 ### Repeat encounters
 
 `bundle` reports how many objects were seen more than once and how many references collapsed into how many objects. That collapse is what referent hashing is for: the same object reached twice by different addresses is one object, and nothing had to agree for that to hold.

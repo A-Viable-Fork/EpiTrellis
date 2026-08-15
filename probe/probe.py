@@ -942,6 +942,13 @@ def export():
     rows = []
     if os.path.exists(JOURNAL):
         rows = [json.loads(l) for l in open(JOURNAL) if l.strip()]
+    # The journal never leaves the device by accident, but export writes a copy
+    # to shared storage, so a redaction has to hold here too.
+    red = redactions(rows)
+    if red:
+        rows = [r for r in rows if r.get("capture_id") not in red]
+        print("export omits %d redacted capture(s); the journal on this device "
+              "is unchanged" % len(red))
     finds = [r for r in rows if r.get("event") == "finding"]
 
     # 1. the report, as text
@@ -1024,6 +1031,135 @@ CONFLICT_PAIR = frozenset({"stable_referent", "producer_refused"})
 CONFLICT_RULE = "stable_referent with producer_refused"
 
 
+# ---------------------------------------------------------------- redaction
+
+def redactions(rows):
+    """Capture ids currently redacted, by replaying the redaction events.
+
+    A redaction is an event like any other, so the sequence stays visible and a
+    later `unredact` is a further event rather than an erasure. Last action per
+    capture wins."""
+    state = {}
+    for r in rows:
+        if r.get("event") != "redaction":
+            continue
+        cid = r.get("capture_id")
+        if cid and r.get("action") in ("redact", "unredact"):
+            state[cid] = r["action"]
+    return {c for c, a in state.items() if a == "redact"}
+
+
+def resolve_targets(rows, tokens):
+    """Accept a capture id or an object hash. The operator reads a bundle,
+    which names objects by hash and never by capture id, so requiring the
+    capture id would mean the thing they are looking at cannot be named."""
+    refs = {r.get("capture_id"): r for r in rows if r.get("event") == "reference"}
+    known = {r.get("capture_id") for r in rows if r.get("capture_id")}
+    by_hash = {}
+    for r in rows:
+        if r.get("event") != "finding":
+            continue
+        cid = r.get("capture_id")
+        h = r.get("object_hash") or derive_referent(refs.get(cid))[1]
+        if h:
+            by_hash.setdefault(h, set()).add(cid)
+    out, unknown = set(), []
+    for t in tokens:
+        if t in known:
+            out.add(t)
+        elif t in by_hash:
+            out |= by_hash[t]
+        else:
+            unknown.append(t)
+    return out, unknown
+
+
+def redact(tokens, action="redact"):
+    """Exclude an object from every future export without deleting anything.
+
+    The journal stays append-only. The row remains, the bundle skips it, and
+    the count of skipped objects is reported so the export still states its own
+    denominator."""
+    ensure_dirs()
+    if not os.path.exists(JOURNAL):
+        print("no journal yet")
+        return
+    rows = [json.loads(l) for l in open(JOURNAL) if l.strip()]
+    cids, unknown = resolve_targets(rows, tokens)
+    for u in unknown:
+        print("not found in this journal: %s" % u)
+    if not cids:
+        print("nothing to %s" % action)
+        return
+    for cid in sorted(cids):
+        emit({"event": "redaction", "capture_id": cid, "action": action,
+              "instrument": instrument_hash()})
+    if action == "redact":
+        print("redacted %d capture(s). The rows stay in the journal and the "
+              "bundle will skip them." % len(cids))
+        print("This does not remove the address from the journal on this")
+        print("device. If the address itself is the disclosure, see: purge")
+    else:
+        print("unredacted %d capture(s). The bundle will include them again."
+              % len(cids))
+        print("Both events remain in the journal, so the sequence is visible.")
+
+
+def purge(tokens):
+    """Delete rows. This is the one place the append-only rule is broken.
+
+    Redaction keeps an object out of a bundle. It cannot help when the address
+    itself is the disclosure and the journal holding it is the problem: an
+    unlisted link is a capability, and possession is the access.
+
+    What is given up: no bytes are ever removed. What is kept: the record
+    cannot silently lose things. The rewrite appends an event saying that it
+    happened, when, and how many rows went, and deliberately not what they
+    were, since recording them would defeat the purpose."""
+    ensure_dirs()
+    if not os.path.exists(JOURNAL):
+        print("no journal yet")
+        return
+    rows = [json.loads(l) for l in open(JOURNAL) if l.strip()]
+    cids, unknown = resolve_targets(rows, tokens)
+    for u in unknown:
+        print("not found in this journal: %s" % u)
+    if not cids:
+        print("nothing to purge")
+        return
+
+    doomed = [r for r in rows if r.get("capture_id") in cids]
+    print("\nPURGE rewrites the journal and deletes rows permanently.")
+    print("There is no backup, because a backup would keep the addresses.")
+    print("%d row(s) across %d capture(s) will be removed."
+          % (len(doomed), len(cids)))
+    print("Blobs under %s are content-addressed and are NOT touched." % BLOBS)
+    print("\nThis is the only command here that is not append-only.")
+    if not sys.stdin.isatty():
+        print("\nRefusing to run non-interactively. Run it from a shell.")
+        return
+    try:
+        if input("\nType PURGE to confirm: ").strip() != "PURGE":
+            print("cancelled, nothing was removed")
+            return
+    except (EOFError, KeyboardInterrupt):
+        print("\ncancelled, nothing was removed")
+        return
+
+    kept = [r for r in rows if r.get("capture_id") not in cids]
+    tmp = JOURNAL + ".rewrite"
+    with open(tmp, "w") as f:
+        for r in kept:
+            f.write(json.dumps(r, ensure_ascii=False) + "\n")
+    os.replace(tmp, JOURNAL)
+    emit({"event": "redaction", "action": "purge",
+          "rows_removed": len(doomed), "captures_removed": len(cids),
+          "instrument": instrument_hash()})
+    print("\nremoved %d row(s) across %d capture(s)" % (len(doomed), len(cids)))
+    print("appended a purge record: it says a rewrite happened, when, and how")
+    print("many rows went. It does not say what they were.")
+
+
 def derive_referent(ref):
     """Recover (referent_key, object_hash) from a reference row that predates
     the hashing code.
@@ -1068,6 +1204,7 @@ def bundle():
 
     rows = [json.loads(l) for l in open(JOURNAL) if l.strip()]
     refs = {r["capture_id"]: r for r in rows if r.get("event") == "reference"}
+    redacted_cids = redactions(rows)
 
     objs = {}
     derived_rows, derived_hashes = 0, set()
@@ -1077,6 +1214,7 @@ def bundle():
     # which is the defect the discard bug already was. Count what is left out
     # and why, rather than reporting only what survived.
     excluded = {"no_reference_row": 0, "no_address": 0}
+    redacted_objs = set()
     for r in rows:
         if r.get("event") != "finding":
             continue
@@ -1098,6 +1236,11 @@ def bundle():
             # reference row at all, because the share carried no URL.
             excluded["no_reference_row" if ref is None else "no_address"] += 1
             continue
+        if r.get("capture_id") in redacted_cids:
+            # One redacted sighting redacts the object. A partially exported
+            # object is still exported, and the operator asked for it gone.
+            redacted_objs.add(h)
+            continue
         hashed_rows += 1
         e = objs.setdefault(h, {"h": h, "ref": key, "alt": {}, "kinds": [],
                                 "n": 0, "srcs": set()})
@@ -1118,6 +1261,13 @@ def bundle():
             e["kinds"].append(kind)
         for k, v in (r.get("alt_referents") or {}).items():
             e["alt"][v["hash"]] = v["url"]
+
+    # An object with any redacted sighting leaves entirely, including
+    # sightings that were not themselves redacted.
+    for h in redacted_objs:
+        o = objs.pop(h, None)
+        if o:
+            hashed_rows -= o["n"]
 
     # A verdict describes an encounter, not an object. Four sightings of one
     # object on one device in one morning produced both stable_referent and
@@ -1155,7 +1305,9 @@ def bundle():
         "excluded": {
             "no_address": excluded["no_address"],
             "no_reference_row": excluded["no_reference_row"],
-            "total": excluded["no_address"] + excluded["no_reference_row"],
+            "redacted": len(redacted_objs),
+            "total": (excluded["no_address"] + excluded["no_reference_row"]
+                      + len(redacted_objs)),
         },
         # A stranger receiving this cannot otherwise see that an object's
         # verdict list disagrees with itself. Reported, not resolved.
@@ -1206,6 +1358,10 @@ def bundle():
         if ex["no_reference_row"]:
             print("  %d with no reference row at all. The share carried no URL."
                   % ex["no_reference_row"])
+        if ex["redacted"]:
+            print("  %d object(s) redacted by the operator. The rows are still"
+                  % ex["redacted"])
+            print("     in the journal; only the export skips them.")
         print("  The bundle is %d of %d findings. The other %d are the "
               "hypothesis"
               % (hashed_rows, findings_total, ex["total"]))
@@ -1411,9 +1567,21 @@ def main():
     if len(sys.argv) > 2 and sys.argv[1] == "join":
         join(sys.argv[2])
         return
+    if len(sys.argv) > 2 and sys.argv[1] == "redact":
+        redact(sys.argv[2:])
+        return
+    if len(sys.argv) > 2 and sys.argv[1] == "unredact":
+        redact(sys.argv[2:], action="unredact")
+        return
+    if len(sys.argv) > 2 and sys.argv[1] == "purge":
+        purge(sys.argv[2:])
+        return
     text = sys.stdin.read() if not sys.stdin.isatty() else " ".join(sys.argv[1:])
     if not text.strip():
         print("usage: probe.py <url|text>   |   probe.py report")
+        print("       probe.py redact <capture_id|object_hash> ...")
+        print("       probe.py unredact <capture_id|object_hash> ...")
+        print("       probe.py purge <capture_id|object_hash> ...  (deletes)")
         return
     probe(text.strip())
 

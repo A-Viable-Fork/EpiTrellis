@@ -93,6 +93,18 @@ for line in sys.stdin:
             pass
 
 refs = {r.get("capture_id"): r for r in rows if r.get("event") == "reference"}
+
+# Redaction events replayed: last action per capture wins. The rows stay in the
+# journal and the export skips them, so a redacted object leaves the bundle
+# without anything being deleted.
+_state = {}
+for r in rows:
+    if r.get("event") == "redaction" and r.get("action") in ("redact", "unredact"):
+        if r.get("capture_id"):
+            _state[r["capture_id"]] = r["action"]
+redacted_cids = {c for c, a in _state.items() if a == "redact"}
+redacted_objs = set()
+
 objs = {}
 derived_rows, derived_hashes = 0, set()
 hashed_rows, findings_total = 0, 0
@@ -115,6 +127,11 @@ for r in rows:
     if not h:
         excluded["no_reference_row" if ref is None else "no_address"] += 1
         continue
+    if r.get("capture_id") in redacted_cids:
+        # One redacted sighting redacts the object: a partially exported object
+        # is still exported.
+        redacted_objs.add(h)
+        continue
     hashed_rows += 1
     e = objs.setdefault(h, {"h": h, "ref": key, "alt": {}, "kinds": [],
                             "n": 0, "srcs": set()})
@@ -135,6 +152,11 @@ for r in rows:
     for v in (r.get("alt_referents") or {}).values():
         e["alt"][v["hash"]] = v["url"]
 
+for _h in redacted_objs:
+    _o = objs.pop(_h, None)
+    if _o:
+        hashed_rows -= _o["n"]
+
 # A verdict describes an encounter, not an object. A stranger receiving this
 # bundle cannot otherwise see that an object's verdict list disagrees with
 # itself. Reported, not resolved.
@@ -147,7 +169,9 @@ out = {"v": 0, "objects": [
     "findings": findings_total,
     "excluded": {"no_address": excluded["no_address"],
                  "no_reference_row": excluded["no_reference_row"],
-                 "total": excluded["no_address"] + excluded["no_reference_row"]},
+                 "redacted": len(redacted_objs),
+                 "total": (excluded["no_address"] + excluded["no_reference_row"]
+                           + len(redacted_objs))},
     "verdicts": {"multi_kind": multi_kind, "conflicting": conflicting,
                  "conflict_rule": CONFLICT_RULE}}
 
@@ -166,8 +190,10 @@ if derived_rows:
           % (derived_rows, len(derived_hashes)), file=err)
 ex = out["excluded"]
 if ex["total"]:
-    print("%d finding(s) excluded: %d with no address, %d with no reference row"
-          % (ex["total"], ex["no_address"], ex["no_reference_row"]), file=err)
+    print("%d excluded: %d with no address, %d with no reference row, "
+          "%d redacted by the operator"
+          % (ex["total"], ex["no_address"], ex["no_reference_row"],
+             ex["redacted"]), file=err)
     print("those are the hypothesis break, not a gap in the export", file=err)
 repeats = [o for o in out["objects"] if o["seen"] > 1]
 if repeats:

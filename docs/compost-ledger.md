@@ -78,6 +78,39 @@ the one with users will be the real one.
 Reactivation: none. The replacement is storage as a contract the user selects,
 so one build serves both.
 
+**8a. The journal is append-only, without exception.** 2026-08-15. Weakened
+deliberately, and recorded here rather than quietly, because the rule is one the
+project has held to since the first commit and still holds everywhere else.
+
+Held: no row is ever rewritten or deleted. A superseded finding stays visible
+beside its replacement, and the record of having been wrong is part of the
+evidence.
+
+Killed by a case the rule cannot answer. An unlisted link is a capability rather
+than an address: possession is the access. The operator's journal contains two,
+a `claude.ai/share/` link and a Google Docs `/d/` id, and both had already left
+the device inside a bundle. Excluding them from future exports does not help,
+because the disclosure is the address and the journal holds it. Append-only says
+the only remedy is to keep it forever.
+
+Survived, and this is most of the rule. Exclusion from an export is a separate
+mechanism that stays fully append-only: a `redaction` event names a capture, the
+rows remain, the bundle skips them and reports how many it skipped, and an
+`unredact` event reverses the decision without erasing that it was made. That
+covers everything except the case where holding the bytes is itself the harm.
+
+What was given up, stated plainly: `probe.py purge` rewrites the journal and
+deletes rows. No bytes-are-forever guarantee survives it. What was kept instead
+is weaker and worth naming precisely: the record cannot silently lose things.
+The rewrite appends an event saying a rewrite happened, when, and how many rows
+went, and deliberately not what they were. A reader of a purged journal can see
+that it is incomplete and by how much, which is the property that actually
+carries the evidential weight. "Nothing was removed" was never the thing being
+protected; "nothing was removed without saying so" was.
+
+Reactivation: a way to hold a capability URL that makes possession safe. Nothing
+here is close to that, and the fallback is not to hold it.
+
 **9. The headline of a document about not overclaiming, overclaimed.**
 2026-08-14. `docs/findings/probe-referent-stability.md` asserted that every
 encountered object produced a resolvable referent, four lines below its own table
