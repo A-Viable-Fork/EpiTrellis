@@ -2,7 +2,7 @@
 Type: finding
 Purpose: "What the referent stability probe established across thirteen encountered objects, with the retractions it forced."
 Depends on: [probe/MANUAL.md]
-Depended on by: [docs/departure-from-epistack.md, docs/status-ledger.md, docs/design/pocket-revised-v0.2.md, README.md, docs/findings/verdict-is-per-encounter.md]
+Depended on by: [docs/departure-from-epistack.md, docs/status-ledger.md, docs/design/pocket-revised-v0.2.md, README.md, docs/findings/verdict-is-per-encounter.md, docs/findings/join-intersects-the-wrong-field.md]
 ---
 
 # Finding: Referent Stability

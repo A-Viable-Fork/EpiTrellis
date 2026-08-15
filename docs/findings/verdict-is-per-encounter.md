@@ -2,7 +2,7 @@
 Type: finding
 Purpose: "That a verdict describes one encounter with an object rather than the object itself, established from a single object encountered four times, and what that costs a join between two parties."
 Depends on: [docs/findings/probe-referent-stability.md]
-Depended on by: [docs/corpus-index.md]
+Depended on by: [docs/corpus-index.md, docs/findings/join-intersects-the-wrong-field.md]
 ---
 
 # Finding: A Verdict Is A Property Of An Encounter
@@ -104,3 +104,10 @@ The code that keeps a referent when a fetch fails has been exercised only
 against a stub. An operator re-run is now confirmation of something already
 visible in the derivation rather than the discovery of it, and that is a weaker
 test than it would have been a day earlier.
+
+*Superseded, 2026-08-15. The live path has now been exercised: eleven new
+captures over two producers, all producing resolvable references, with
+exclusions unchanged and nothing discarded. The paragraph above stays because it
+was published, and what it predicted held. The confirmation was weaker than a
+discovery would have been, exactly as it says. See
+`docs/findings/join-intersects-the-wrong-field.md`.*
