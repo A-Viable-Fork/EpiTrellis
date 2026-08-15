@@ -143,6 +143,26 @@ absent, since the other direction already covers the case where such a path turn
 out to be present. Neither half had been run against history before that, and the
 error would have shipped.
 
+**A fifth instance, 2026-08-14, and the first one inside the instrument rather
+than in a document.** The journal could not say which code wrote it. Establishing
+that the first corpus came from a probe predating the referent-hashing code took
+four separate diagnostic commands and a deduction from absent keys, when one
+field on the capture event would have shown it outright. `probe.py bundle`
+reporting 0 objects was read as a bug in bundle; bundle was reading correctly and
+the rows lacked the field.
+
+This widens the class beyond what entry 10 first described. The shape was stated
+as a document holding a copy of a fact whose authority lives elsewhere in the
+tree. Here there was no copy at all: the data did not describe itself, and the
+authority for which code wrote a row existed nowhere. Documents drift by holding
+a stale copy. Data drifts by holding none, and the failure looks like a bug in
+whatever reads it. The class spans documents and data, which the original entry
+did not anticipate.
+
+Killed by stamping every capture with the SHA-256 of the running probe, and by
+deriving the missing hashes at read time rather than rewriting rows. Absence of
+the stamp is now itself the marker for the older instrument.
+
 **This is not solved.** Two of four are caught by nothing. The check count is
 caught only because the count was deleted, which fixes the instance and not the
 class: any future prose count of anything is invisible to both halves. The
@@ -154,6 +174,10 @@ trellises where universals are the house style and almost all of them sound, and
 a queue nobody reads is worth nothing. It did list entry 9's exact sentence at
 the commit where that claim was live, which is the only evidence that the
 advisory half is pointed at anything real.
+
+The fifth instance is no better covered than the others. Nothing checks that a
+journal row can name the code that wrote it, and no check here could: the
+authority is a file on a phone this repository never sees.
 
 Reactivation: not applicable, since nothing was killed that could return. What
 would close it is the findings pipeline that recomputes cited figures from the

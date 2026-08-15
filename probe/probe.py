@@ -95,6 +95,37 @@ def write_blob(b):
     return h
 
 
+_INSTRUMENT = None
+
+
+def instrument_hash():
+    """sha256 of the running probe, first 16 hex characters.
+
+    The journal must be able to answer which code wrote a row without anyone
+    running a diagnostic against it afterward. Establishing that for the first
+    corpus took four separate commands and a deduction, because nothing in the
+    file said.
+
+    Sixteen characters rather than sixty-four, matching `refhash`. It
+    distinguishes versions of one file on one device, which is all it is for.
+
+    A capture with no `instrument` field was written before 2026-08-14 by a
+    probe that predates this stamp. Absence is the marker for that instrument,
+    and rows already written are not to be touched."""
+    global _INSTRUMENT
+    if _INSTRUMENT is None:
+        try:
+            path = os.path.abspath(__file__)
+        except NameError:
+            path = os.path.abspath(sys.argv[0])
+        try:
+            with open(path, "rb") as f:
+                _INSTRUMENT = sha256(f.read())[:16]
+        except Exception:
+            _INSTRUMENT = "unreadable"
+    return _INSTRUMENT
+
+
 def emit(record):
     """Append one event. The journal is the only durable artifact."""
     record.setdefault("at", time.strftime("%Y-%m-%dT%H:%M:%S%z"))
@@ -502,6 +533,7 @@ def probe(shared_text):
         "event": "capture",
         "capture_id": cid,
         "method": "termux.url_opener",
+        "instrument": instrument_hash(),
         "raw": shared_text[:4000],
         "raw_hash": sha256(shared_text.encode()),
         "url_count": len(urls),
@@ -560,10 +592,26 @@ def probe(shared_text):
             archive_meta = rec["archive"]
         else:
             kind = "producer_refused" if refusal else "unreachable"
+            # The referent was derived above, before anything was fetched, and
+            # a refused fetch does not invalidate it. Earlier versions emitted
+            # this finding without an object_hash, so every downstream
+            # derivation dropped the object entirely and the corpus counted it
+            # as producing no referent at all. Facebook and NYT are both that
+            # case: the receiver held a good shared URL for each and threw it
+            # away because the bytes were refused.
+            #
+            # Referent stability and payload acquisition are separate
+            # measurements. Recording the referent here is what keeps them
+            # separate. The verdict still describes the payload, because that
+            # is what failed, and `referent_held` says the other half survived.
             emit({"event": "finding", "capture_id": cid, "kind": kind,
-                  "flags": ([refusal] if refusal else []) + ["no_archive_snapshot"],
+                  "object_hash": refhash(final),
+                  "referent_key": referent_key(final),
+                  "flags": ([refusal] if refusal else [])
+                           + ["no_archive_snapshot", "referent_held"],
                   "detail": a["error"], "host": host_of(final)})
-            notify("Trellis probe: " + kind, (refusal or a["error"])[:80])
+            notify("Trellis probe: " + kind,
+                   (refusal or a["error"])[:80] + "\nreferent held")
             return
 
     body_a, body_b = a.pop("body"), b.pop("body", b"")
@@ -742,6 +790,7 @@ def probe_file(path):
         "event": "capture",
         "capture_id": cid,
         "method": "termux.file_editor",
+        "instrument": instrument_hash(),
         "filename": name,
         "ext": ext,
         "bytes": len(data),
@@ -971,6 +1020,33 @@ def recheck():
     print("\ndone. originals are preserved; new findings appended.")
 
 
+def derive_referent(ref):
+    """Recover (referent_key, object_hash) from a reference row that predates
+    the hashing code.
+
+    `object_hash` is `sha256(referent_key(final_url))[:16]`, a pure function of
+    a URL the reference row already carries, so a journal written before that
+    code existed can still be joined against another party's bundle, and the
+    hashes agree because the function is the same one.
+
+    This is a read-time derivation on purpose. Appending computed rows would
+    make the journal a record of what was later worked out rather than of what
+    happened, and rewriting rows is forbidden outright: the first corpus is
+    evidence that two instruments touched one file, and that evidence is worth
+    more than the convenience of a uniform schema.
+
+    Returns (None, None) when the row carries no URL to derive from."""
+    if not ref:
+        return None, None
+    key = ref.get("referent_key")
+    if key:
+        return key, sha256(key.encode())[:16]
+    url = ref.get("final_url") or ref.get("cleaned_url") or ref.get("shared_url")
+    if not url:
+        return None, None
+    return referent_key(url), refhash(url)
+
+
 def bundle():
     """Emit the small thing: what one party could hand another so that shared
     objects are discoverable. References and hashes only, never payload.
@@ -990,16 +1066,29 @@ def bundle():
     refs = {r["capture_id"]: r for r in rows if r.get("event") == "reference"}
 
     objs = {}
+    derived = 0
     for r in rows:
-        if r.get("event") != "finding" or not r.get("object_hash"):
+        if r.get("event") != "finding":
             continue
-        h = r["object_hash"]
         ref = refs.get(r.get("capture_id"), {})
-        e = objs.setdefault(h, {"h": h, "ref": ref.get("referent_key"),
+        h = r.get("object_hash")
+        key = ref.get("referent_key")
+        if not h or not key:
+            dk, dh = derive_referent(ref)
+            key = key or dk
+            if not h and dh:
+                h = dh
+                derived += 1
+        if not h:
+            continue
+        e = objs.setdefault(h, {"h": h, "ref": key,
                                 "alt": {}, "kinds": [], "n": 0})
+        if not e["ref"]:
+            e["ref"] = key
         e["n"] += 1
-        if r["kind"] not in e["kinds"]:
-            e["kinds"].append(r["kind"])
+        kind = r.get("kind", "unknown")
+        if kind not in e["kinds"]:
+            e["kinds"].append(kind)
         for k, v in (r.get("alt_referents") or {}).items():
             e["alt"][v["hash"]] = v["url"]
 
@@ -1023,6 +1112,12 @@ def bundle():
 
     n = len(out["objects"])
     print("%d objects, %d bytes" % (n, len(blob)))
+    if derived:
+        print("%d of these were hashed at read time from a reference row that"
+              % derived)
+        print("carried no object_hash, which means this journal predates the")
+        print("hashing code. The journal was not modified. The derivation is")
+        print("the same function the probe now runs, so the hashes join.")
     if n:
         print("%.0f bytes per object" % (len(blob) / n))
         print("\n1,000 objects would be roughly %.0f KB" % (len(blob) / n * 1000 / 1024))

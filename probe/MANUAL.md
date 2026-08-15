@@ -196,12 +196,40 @@ Long-press the home screen, add a Termux:Widget widget, tap `trellis-report`.
 
 | Event | Contents |
 |---|---|
-| `capture` | what arrived, hashed, before any interpretation |
+| `capture` | what arrived, hashed, before any interpretation, plus `instrument` |
 | `reference` | share URL, cleaned URL, dropped tracking params, redirect chain, resolved final URL |
 | `fetch_pair` | both fetches, byte hashes, text similarity, shell detection, and the identity the page volunteers about itself (canonical, og:url, DOI, title) |
 | `finding` | the verdict and its flags |
 
 `~/trellis-probe/blobs/` — content-addressed bodies. Delete freely; the journal survives without them.
+
+### Which code wrote a row
+
+Every `capture` carries `instrument`, the SHA-256 of the running `probe.py`, **first 16 hex characters**, the same width `object_hash` uses. Read it back with:
+
+```sh
+grep -o '"instrument": *"[^"]*"' ~/trellis-probe/journal.ndjson | sort | uniq -c
+```
+
+Compare that against the probe you have installed:
+
+```sh
+python3 -c "import hashlib;print(hashlib.sha256(open('$HOME/bin/probe.py','rb').read()).hexdigest()[:16])"
+```
+
+If they differ, the journal was written by a version you no longer have, and that is exactly what the field exists to tell you.
+
+**A capture with no `instrument` field predates 2026-08-14.** Rows already written are not stamped and are not to be touched. Absence is the marker for the older instrument, and it is a reliable one: no version that emits the field can produce a capture without it.
+
+That matters for the first corpus. Every row written on 2026-08-13 came from a probe that predates the referent-hashing code, which is why its `reference` rows carry no `referent_key` and its `finding` rows carry no `object_hash`. Establishing that took four separate diagnostic commands and a deduction, because nothing in the file said. It now says.
+
+### Reading a journal that predates the hashing code
+
+`probe.py bundle` handles this without touching the file. `object_hash` is `sha256(referent_key(final_url))[:16]`, a pure function of a URL those old `reference` rows already carry, so the bundle derives the missing hashes at read time using the same function the probe runs now. The hashes therefore join against another party's bundle exactly as freshly written ones would.
+
+The derivation happens on read and nothing is appended. When it fires, `bundle` says how many objects were hashed that way. A recorded `object_hash` always wins; derivation only fills absences, so a current journal is unaffected.
+
+The journal stays a record of what happened rather than a record of what was later worked out. That the first corpus was written by one instrument and read by another is evidence, and rewriting rows would destroy it.
 
 ---
 
@@ -224,10 +252,20 @@ If the URL looks like it carries a share token, session key, or document id, the
 
 When the probe runs non-interactively, from the widget or a batch scan, it reads existing snapshots and never creates new ones.
 
+### A refused fetch no longer discards the referent
+
+Changed 2026-08-14. The referent is derived before anything is fetched, and a producer refusing to serve bytes does not invalidate the address that was already resolved. Earlier versions emitted the `producer_refused` and `unreachable` findings with no `object_hash`, so every derivation downstream dropped the object and the corpus counted it as producing no referent at all.
+
+Facebook and NYT in the first corpus are both that case. The receiver held a good shared URL for each and threw it away because the bytes were refused.
+
+Now the finding for a refused fetch carries `object_hash`, `referent_key`, and the flag `referent_held`. The verdict still names the payload outcome, `producer_refused` or `unreachable`, because the payload is what failed. No new verdict was added, because the existing ones already describe the payload correctly; what was missing was the other half of the measurement.
+
+Referent stability and payload acquisition are separate measurements. The instrument used to conflate them by discarding the first whenever the second failed.
+
 ### Why the archive may be the better source
 
 A live fetch is unreproducible. You cannot later prove what was there, and the bytes move between requests. An archived snapshot is dated, stable, third-party held, and re-fetchable by anyone. For grounding a claim in what a source said, that is stronger evidence, not a fallback.
-| `producer_refused` | producer received the request and declined: paywall, bot block, geo, gone | copyright and access question, already anticipated |
+| `producer_refused` | producer received the request and declined: paywall, bot block, geo, gone. The referent is kept and recorded | copyright and access question, already anticipated |
 | `referent_problem` | fetched, and something about the referent did not hold | the interesting middle |
 | `unreachable` | network failure, no producer response | probe noise, not a finding |
 | `no_reference` | the share carried no resolvable reference at all | **the hypothesis break** |
@@ -248,7 +286,7 @@ The probe checks shared files for embedded references anyway: a DOI, a canonical
 
 ## Flags
 
-`wrapper_share_link` · `noise_params_present` · `cross_host_redirect` · `payload_withheld` · `payload_not_at_reference` · `unstable_text` · `unstable_bytes` · `canonical_disagrees` · `no_producer_identity` · `thin_payload` · `similarity_unmeasurable`
+`wrapper_share_link` · `noise_params_present` · `cross_host_redirect` · `payload_withheld` · `payload_not_at_reference` · `unstable_text` · `unstable_bytes` · `canonical_disagrees` · `no_producer_identity` · `thin_payload` · `similarity_unmeasurable` · `referent_held` · `no_archive_snapshot`
 
 Two notes. `unstable_bytes` fires on nearly everything including Wikipedia and is not itself a problem: bytes move, text holds, referent stable. `unstable_text` is the one that matters. And `similarity_unmeasurable` is a statement about the measurement rather than about the object, since similarity over a few hundred characters of scaffolding measures session nonces.
 

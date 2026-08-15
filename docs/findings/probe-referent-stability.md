@@ -68,6 +68,23 @@ counted as producing nothing. Facebook and NYT are both that case. This is a
 known instrument bug and not a property of the objects, and until it is fixed
 the eleven is a floor rather than a measurement.
 
+*Fixed in the instrument 2026-08-14, not in this corpus. A refused fetch now
+keeps the referent it already derived and records it with the flag
+`referent_held`, so referent stability and payload acquisition stop being
+conflated. The eleven above is unchanged, because this measurement was taken
+with the old instrument and a measurement is not re-run by editing the document
+that reports it. A later run under the current probe is what would move the
+number.*
+
+*Provenance, recorded 2026-08-14. Every row of this corpus was written by a
+probe that predates both the instrument stamp and the referent-hashing code, so
+its `reference` rows carry no `referent_key` and its `finding` rows carry no
+`object_hash`. Captures written from 2026-08-14 onward carry an `instrument`
+field holding the SHA-256 of the running probe. Absence of that field is the
+marker for the older instrument, and the rows were not retroactively stamped.
+The missing hashes are recoverable by derivation at read time, since
+`object_hash` is a pure function of a URL those rows already carry.*
+
 The probe measured objects that were shareable, which selects on the property
 being tested. Objects that cannot be shared as a link never entered the sample
 and their frequency is unmeasured.
