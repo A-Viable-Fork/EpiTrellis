@@ -28,6 +28,7 @@ A claim not appearing here is not a claim about this system.
 | Thing | Check |
 |---|---|
 | Referent normalization and object hashing | `functions/bundle`, two-party join demonstrated |
+| One receiver encounters the same object more than once, and hashing collapses it | `probe.py bundle`, 19 references to 16 objects on one device |
 | Capture via share sheet, no producer cooperation | `probe/probe.py`, 13 objects |
 | Archive fallback with consent and capability-URL warning | `probe/probe.py` |
 | Function loader: discovery, hashing, subprocess invocation | `scripts/verify-functions.py` |
@@ -40,6 +41,23 @@ A claim not appearing here is not a claim about this system.
 | Typed header on every document | `scripts/verify-docs.py` |
 | Dependency reciprocity, Depends-on to Depended-on-by | `scripts/verify-docs.py` |
 | Paths named in documents exist, and paths called absent do not | `scripts/verify-selfdescription.py` |
+
+### The collapse, measured once
+
+On the operator's device, 2026-08-14, 19 hashable references collapsed to 16
+distinct objects. Two captures shared an address byte for byte, and a further
+pair differed only in what `referent_key` normalizes away. Two objects were
+encountered more than once, three repeat sightings in total.
+
+This is the first evidence in this corpus that a receiver meets the same object
+twice, which is the case referent hashing exists to handle, and it held without
+anything having to agree. It is one device and one operator and it has no
+finding document yet, deliberately: whether it belongs in the referent finding
+or in its own is the operator's call and has not been made.
+
+The same run excludes 9 of 28 findings from the bundle. Seven file shares have
+no address, and two captures carried no URL and so have no reference row. The
+bundle now reports both counts rather than dropping them silently.
 
 ## Specified, not built
 

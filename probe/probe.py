@@ -1066,21 +1066,35 @@ def bundle():
     refs = {r["capture_id"]: r for r in rows if r.get("event") == "reference"}
 
     objs = {}
-    derived = 0
+    derived_rows, derived_hashes = 0, set()
+    hashed_rows = 0
+    findings_total = 0
+    # A bundle that quietly drops findings understates its own denominator,
+    # which is the defect the discard bug already was. Count what is left out
+    # and why, rather than reporting only what survived.
+    excluded = {"no_reference_row": 0, "no_address": 0}
     for r in rows:
         if r.get("event") != "finding":
             continue
-        ref = refs.get(r.get("capture_id"), {})
+        findings_total += 1
+        ref = refs.get(r.get("capture_id"))
         h = r.get("object_hash")
-        key = ref.get("referent_key")
+        key = ref.get("referent_key") if ref else None
         if not h or not key:
             dk, dh = derive_referent(ref)
             key = key or dk
             if not h and dh:
                 h = dh
-                derived += 1
+                derived_rows += 1
+                derived_hashes.add(h)
         if not h:
+            # No identifier exists and none may be invented. A file share has
+            # a reference row carrying no address, because the object arrived
+            # as payload with nothing to resolve. A no_reference capture has no
+            # reference row at all, because the share carried no URL.
+            excluded["no_reference_row" if ref is None else "no_address"] += 1
             continue
+        hashed_rows += 1
         e = objs.setdefault(h, {"h": h, "ref": key,
                                 "alt": {}, "kinds": [], "n": 0})
         if not e["ref"]:
@@ -1099,6 +1113,14 @@ def bundle():
              "kinds": o["kinds"], "alt": o["alt"]}
             for o in sorted(objs.values(), key=lambda x: x["ref"] or "")
         ],
+        # What this bundle is not carrying, so a reader can see the whole
+        # denominator rather than only the part that survived.
+        "findings": findings_total,
+        "excluded": {
+            "no_address": excluded["no_address"],
+            "no_reference_row": excluded["no_reference_row"],
+            "total": excluded["no_address"] + excluded["no_reference_row"],
+        },
     }
 
     path = os.path.join(EXPORT_DIR, "bundle.json")
@@ -1112,18 +1134,50 @@ def bundle():
 
     n = len(out["objects"])
     print("%d objects, %d bytes" % (n, len(blob)))
-    if derived:
-        print("%d of these were hashed at read time from a reference row that"
-              % derived)
-        print("carried no object_hash, which means this journal predates the")
-        print("hashing code. The journal was not modified. The derivation is")
-        print("the same function the probe now runs, so the hashes join.")
+    print("from %d finding(s), of which %d carried a resolvable reference."
+          % (findings_total, hashed_rows))
     if n:
         print("%.0f bytes per object" % (len(blob) / n))
         print("\n1,000 objects would be roughly %.0f KB" % (len(blob) / n * 1000 / 1024))
         print("which is the whole multi-homing argument: at this size,")
         print("publishing to five hosts costs nothing, so there is no")
         print("gradient pulling anyone toward a single one.")
+
+    if derived_rows:
+        print("\n%d finding row(s) were hashed at read time, and produced %d "
+              "distinct object(s)." % (derived_rows, len(derived_hashes)))
+        print("Those rows carried no object_hash, which means this journal")
+        print("predates the hashing code. The journal was not modified. The")
+        print("derivation is the same function the probe now runs, so the")
+        print("hashes join.")
+
+    ex = out["excluded"]
+    if ex["total"]:
+        print("\n%d finding(s) are not in this bundle:" % ex["total"])
+        if ex["no_address"]:
+            print("  %d with no address. A file share arrives as payload with"
+                  % ex["no_address"])
+            print("     nothing to resolve, so there is no referent to hash and")
+            print("     none may be invented. Local structure attaches; a second")
+            print("     party still has no way to point at the same object.")
+        if ex["no_reference_row"]:
+            print("  %d with no reference row at all. The share carried no URL."
+                  % ex["no_reference_row"])
+        print("  The bundle is %d of %d findings. The other %d are the "
+              "hypothesis"
+              % (hashed_rows, findings_total, ex["total"]))
+        print("  break, not a gap in the export.")
+
+    repeats = [o for o in out["objects"] if o["seen"] > 1]
+    if repeats:
+        again = sum(o["seen"] - 1 for o in repeats)
+        print("\n%d object(s) were encountered more than once, %d repeat "
+              "sighting(s)." % (len(repeats), again))
+        print("%d reference(s) collapsed to %d object(s). That collapse is what"
+              % (hashed_rows, n))
+        print("referent hashing is for: the same object reached twice by")
+        print("different addresses is one object, and nothing had to agree for")
+        print("that to hold.")
     print("\nwritten to Download/trellis-export/bundle.json")
 
     alts = sum(len(o["alt"]) for o in out["objects"])

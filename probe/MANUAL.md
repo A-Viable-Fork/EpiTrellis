@@ -227,7 +227,19 @@ That matters for the first corpus. Every row written on 2026-08-13 came from a p
 
 `probe.py bundle` handles this without touching the file. `object_hash` is `sha256(referent_key(final_url))[:16]`, a pure function of a URL those old `reference` rows already carry, so the bundle derives the missing hashes at read time using the same function the probe runs now. The hashes therefore join against another party's bundle exactly as freshly written ones would.
 
-The derivation happens on read and nothing is appended. When it fires, `bundle` says how many objects were hashed that way. A recorded `object_hash` always wins; derivation only fills absences, so a current journal is unaffected.
+The derivation happens on read and nothing is appended. When it fires, `bundle` says how many finding rows were hashed that way and how many distinct objects those rows produced. Those two numbers differing is the interesting part: on the first corpus, 19 rows produced 16 objects. A recorded `object_hash` always wins; derivation only fills absences, so a current journal is unaffected.
+
+### What the bundle leaves out, and why it says so
+
+A bundle carries only objects that have a referent to hash. Two populations never can:
+
+A **file share** has a reference row carrying no address, because the payload arrived with nothing to resolve. A **no_reference** capture has no reference row at all, because the share carried no URL. Neither has an identifier and neither may be given one, since inventing an address for an addressless object is the one move that would make the export look complete while being false.
+
+`bundle` prints both counts and records them in `bundle.json` under `excluded`, alongside `findings`, the total it was working from. On the first corpus that reads 19 of 28, with 7 excluded for having no address and 2 for having no reference row. Those 9 are the hypothesis break the probe exists to measure, not a gap in the export, and a bundle that dropped them silently would understate its own denominator.
+
+### Repeat encounters
+
+`bundle` reports how many objects were seen more than once and how many references collapsed into how many objects. That collapse is what referent hashing is for: the same object reached twice by different addresses is one object, and nothing had to agree for that to hold.
 
 The journal stays a record of what happened rather than a record of what was later worked out. That the first corpus was written by one instrument and read by another is evidence, and rewriting rows would destroy it.
 
