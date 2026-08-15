@@ -1,0 +1,114 @@
+{
+ "synthetic": true,
+ "_note": "Parity fixture for referent_key, which exists twice on purpose: in probe/probe.py and in functions/bundle/run. A function cannot import from the instrument, so the copies are checked against these fixed values by scripts/verify-parity.py rather than deduplicated. Hand-built, never harvested; every URL below is fabricated on a reserved test domain or is a shape rather than an instance. This pins PARITY, not correctness: entries marked defect record what the code does today and are wrong on purpose, because changing them changes every hash and breaks joins against journals already written.",
+ "cases": [
+  {
+   "in": "https://example.test/a/b?utm_source=news&utm_campaign=x&id=7",
+   "key": "https://example.test/a/b?id=7",
+   "why": "tracking parameters stripped, real ones kept"
+  },
+  {
+   "in": "https://example.test/a?fbclid=ZZZZZZZZ&si=SHR1&t=12",
+   "key": "https://example.test/a",
+   "why": "a query of nothing but noise disappears"
+  },
+  {
+   "in": "https://EXAMPLE.test/A/B",
+   "key": "https://example.test/A/B",
+   "why": "host lowercased, path case preserved"
+  },
+  {
+   "in": "https://example.test/a/b/",
+   "key": "https://example.test/a/b",
+   "why": "trailing slash removed"
+  },
+  {
+   "in": "https://example.test",
+   "key": "https://example.test/",
+   "why": "a bare host keeps a root path"
+  },
+  {
+   "in": "https://www.example.test/a",
+   "key": "https://example.test/a",
+   "why": "www stripped"
+  },
+  {
+   "in": "https://m.example.test/a",
+   "key": "https://example.test/a",
+   "why": "m. stripped"
+  },
+  {
+   "in": "https://mobile.example.test/a",
+   "key": "https://example.test/a",
+   "why": "mobile. stripped"
+  },
+  {
+   "in": "http://example.test:80/a",
+   "key": "https://example.test/a",
+   "why": "scheme forced to https, :80 dropped"
+  },
+  {
+   "in": "https://example.test:443/a",
+   "key": "https://example.test/a",
+   "why": ":443 dropped"
+  },
+  {
+   "in": "https://example.test/a#section-3",
+   "key": "https://example.test/a",
+   "why": "fragment dropped"
+  },
+  {
+   "in": "https://example.test/a?b=2&a=1",
+   "key": "https://example.test/a?a=1&b=2",
+   "why": "query sorted so two parties agree"
+  },
+  {
+   "in": "https://t.co/AbCdEf01",
+   "key": "https://t.co/AbCdEf01",
+   "why": "a wrapper host is NOT resolved here; resolve() does that before this runs"
+  },
+  {
+   "in": "https://youtu.be/AbCdEfGhIjK",
+   "key": "https://youtu.be/AbCdEfGhIjK",
+   "why": "likewise for the youtube short host"
+  },
+  {
+   "in": "https://www.youtube.com/watch?v=AbCdEfGhIjK&si=SHR2",
+   "key": "https://youtube.com/watch?v=AbCdEfGhIjK",
+   "why": "share token stripped, video id kept"
+  },
+  {
+   "in": "https://www.facebook.com/share/p/1AbCdEfGhJ/",
+   "key": "https://facebook.com/share/p/1AbCdEfGhJ",
+   "why": "the per-share wrapper: unique to the act of sharing, not the object"
+  },
+  {
+   "in": "https://facebook.com/share/r/1AbCdEfGhJ",
+   "key": "https://facebook.com/share/r/1AbCdEfGhJ",
+   "why": "the reel form of the same wrapper"
+  },
+  {
+   "in": "https://www.facebook.com/permalink.php?story_fbid=1234567890&id=987654321",
+   "key": "https://facebook.com/permalink.php?id=987654321&story_fbid=1234567890",
+   "why": "the canonical post: a different key from the wrapper above, which is why two parties do not join"
+  },
+  {
+   "in": "https://mobile.de/auto/123",
+   "key": "https://de/auto/123",
+   "why": "KNOWN DEFECT: mobile. is stripped from a host where it is the name, not a prefix",
+   "status": "defect"
+  },
+  {
+   "in": "https://m.co/x",
+   "key": "https://co/x",
+   "why": "KNOWN DEFECT: same shape, one label shorter",
+   "status": "defect"
+  },
+  {
+   "in": "not a url",
+   "key": "https:///not a url",
+   "why": "KNOWN DEFECT: urlsplit accepts this, so the ValueError guard never fires and a garbage key is produced",
+   "status": "defect"
+  }
+ ]
+}

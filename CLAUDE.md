@@ -54,6 +54,8 @@ An executable named `run`, reading newline-delimited JSON on stdin, writing newl
 
 Subprocess isolation is also the licensing answer: no linking, no derivative work, so GPL and MIT and proprietary functions coexist. Never change this to in-process loading.
 
+**`referent_key` and `capability_reason` are duplicated on purpose.** They exist in both `probe/probe.py` and `functions/bundle/run`. This is not an oversight and it is not to be resolved by extracting a shared module: a function must be independently readable and carry its own license, and importing from the instrument is the coupling the subprocess boundary exists to prevent. The cost is that both failure modes are silent, since divergent normalization yields hashes that look fine and do not join, and divergent capability lists mean the instrument and the export path disagree about what is safe to hand to someone. `scripts/verify-parity.py` pins both copies to `fixtures/synthetic/normalization.json` and `fixtures/synthetic/capability-urls.json`, which is what keeps them honest. Change a behaviour in both copies and the fixture together, in one commit.
+
 ## Checks
 
 ```sh
