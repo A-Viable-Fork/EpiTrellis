@@ -1103,6 +1103,51 @@ def resolve_targets(rows, tokens):
     return out, unknown
 
 
+BLOB_KEYS = ("blob", "raw_hash")
+
+
+def blob_refs(rows):
+    """Every blob a set of rows names, found by walking rather than by knowing.
+
+    References sit at more than one depth: a `fetch_pair` carries them inside
+    its `a` and `b` objects, and a file-share `capture` carries them at the top
+    level under both `blob` and `raw_hash`. Enumerating those positions would
+    make a new event shape a silent miss, and a missed reference means purge
+    deletes a body something still points at, so this walks the whole structure
+    instead.
+
+    Filtered to full sha256 hex, which is what `write_blob` names files. A URL
+    share's `raw_hash` is a hash of the shared text rather than of a stored
+    body, so it names no file and merely fails to match one. That direction is
+    safe: an unmatched reference retains nothing that should go, while a missed
+    reference deletes something still in use."""
+    found = set()
+
+    def walk(node):
+        if isinstance(node, dict):
+            for k, v in node.items():
+                if k in BLOB_KEYS and isinstance(v, str) and len(v) == 64 \
+                        and all(c in "0123456789abcdef" for c in v):
+                    found.add(v)
+                else:
+                    walk(v)
+        elif isinstance(node, list):
+            for v in node:
+                walk(v)
+
+    for r in rows:
+        walk(r)
+    return found
+
+
+def blobs_on_disk():
+    try:
+        return {f for f in os.listdir(BLOBS)
+                if len(f) == 64 and all(c in "0123456789abcdef" for c in f)}
+    except Exception:
+        return set()
+
+
 def redact(tokens, action="redact"):
     """Exclude an object from every future export without deleting anything.
 
@@ -1158,11 +1203,28 @@ def purge(tokens):
         return
 
     doomed = [r for r in rows if r.get("capture_id") in cids]
+    kept = [r for r in rows if r.get("capture_id") not in cids]
+
+    # Refcounting over the journal. A body is content-addressed, so more than
+    # one capture can name the same one, and it is deletable only when nothing
+    # that survives the rewrite still points at it.
+    on_disk = blobs_on_disk()
+    going = blob_refs(doomed) & on_disk
+    staying = blob_refs(kept) & on_disk
+    deletable = sorted(going - staying)
+    retained = sorted(going & staying)
+
     print("\nPURGE rewrites the journal and deletes rows permanently.")
     print("There is no backup, because a backup would keep the addresses.")
     print("%d row(s) across %d capture(s) will be removed."
           % (len(doomed), len(cids)))
-    print("Blobs under %s are content-addressed and are NOT touched." % BLOBS)
+    print("%d payload blob(s) will be deleted with them." % len(deletable))
+    if retained:
+        print("%d payload blob(s) will REMAIN on disk, because other captures"
+              % len(retained))
+        print("   still reference the same body. That is not a failure: the")
+        print("   body is shared and something surviving still points at it.")
+        print("   If you want it gone, purge those captures too.")
     print("\nThis is the only command here that is not append-only.")
     if not sys.stdin.isatty():
         print("\nRefusing to run non-interactively. Run it from a shell.")
@@ -1175,18 +1237,79 @@ def purge(tokens):
         print("\ncancelled, nothing was removed")
         return
 
-    kept = [r for r in rows if r.get("capture_id") not in cids]
     tmp = JOURNAL + ".rewrite"
     with open(tmp, "w") as f:
         for r in kept:
             f.write(json.dumps(r, ensure_ascii=False) + "\n")
     os.replace(tmp, JOURNAL)
+
+    # Rows first, then bodies. If this dies in between, the blobs are orphans
+    # rather than rows pointing at nothing.
+    deleted, failed = 0, []
+    for h in deletable:
+        try:
+            os.remove(os.path.join(BLOBS, h))
+            deleted += 1
+        except Exception as e:
+            failed.append("%s (%s)" % (h[:12], e))
+
     emit({"event": "redaction", "action": "purge",
           "rows_removed": len(doomed), "captures_removed": len(cids),
+          "blobs_deleted": deleted, "blobs_retained": len(retained),
           "instrument": instrument_hash()})
     print("\nremoved %d row(s) across %d capture(s)" % (len(doomed), len(cids)))
-    print("appended a purge record: it says a rewrite happened, when, and how")
-    print("many rows went. It does not say what they were.")
+    print("deleted %d payload blob(s)" % deleted)
+    if retained:
+        print("kept %d payload blob(s) that surviving captures still reference"
+              % len(retained))
+    for msg in failed:
+        print("could not delete blob %s" % msg)
+    print("appended a purge record: it says a rewrite happened, when, how many")
+    print("rows went and how many bodies went. It does not say what they were.")
+
+    orphans = blobs_on_disk() - blob_refs(kept)
+    if orphans:
+        print("\n%d blob(s) on disk are referenced by nothing in the journal."
+              % len(orphans))
+        print("They are not deleted here, because an orphan may predate a")
+        print("rewrite and removing it is a separate decision: probe.py sweep")
+
+
+def sweep():
+    """Delete blobs the journal no longer references.
+
+    Separate from purge on purpose. An orphan may predate a rewrite, or come
+    from a path that writes a body and records no reference to it, and deciding
+    that a body nobody points at is a body nobody wants is not a decision purge
+    should make on the operator's behalf."""
+    ensure_dirs()
+    rows = []
+    if os.path.exists(JOURNAL):
+        rows = [json.loads(l) for l in open(JOURNAL) if l.strip()]
+    orphans = sorted(blobs_on_disk() - blob_refs(rows))
+    if not orphans:
+        print("no orphan blobs: everything on disk is referenced by the journal")
+        return
+    print("%d blob(s) on disk are referenced by nothing in the journal." % len(orphans))
+    print("Deleting them is permanent and there is no backup.")
+    if not sys.stdin.isatty():
+        print("\nRefusing to run non-interactively. Run it from a shell.")
+        return
+    try:
+        if input("\nType SWEEP to confirm: ").strip() != "SWEEP":
+            print("cancelled, nothing was removed")
+            return
+    except (EOFError, KeyboardInterrupt):
+        print("\ncancelled, nothing was removed")
+        return
+    gone = 0
+    for h in orphans:
+        try:
+            os.remove(os.path.join(BLOBS, h))
+            gone += 1
+        except Exception as e:
+            print("could not delete %s (%s)" % (h[:12], e))
+    print("deleted %d orphan blob(s). The journal was not touched." % gone)
 
 
 def derive_referent(ref):
@@ -1630,12 +1753,16 @@ def main():
     if len(sys.argv) > 2 and sys.argv[1] == "purge":
         purge(sys.argv[2:])
         return
+    if len(sys.argv) > 1 and sys.argv[1] == "sweep":
+        sweep()
+        return
     text = sys.stdin.read() if not sys.stdin.isatty() else " ".join(sys.argv[1:])
     if not text.strip():
         print("usage: probe.py <url|text>   |   probe.py report")
         print("       probe.py redact <capture_id|object_hash> ...")
         print("       probe.py unredact <capture_id|object_hash> ...")
         print("       probe.py purge <capture_id|object_hash> ...  (deletes)")
+        print("       probe.py sweep                               (deletes)")
         return
     probe(text.strip())
 

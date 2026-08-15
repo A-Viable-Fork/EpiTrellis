@@ -233,6 +233,36 @@ referent key and the distinction lives in the journal.
 No check catches this one either. The output is prose assembled at runtime and
 `verify-selfdescription.py` reads files in the tree, not what a program prints.
 
+**A seventh instance, 2026-08-15, and a different failure than the other six.**
+`probe.py purge` deleted journal rows and left the payload bodies on disk. That
+was known from the moment purge was written: it was flagged in the report, and
+`probe/MANUAL.md` said so plainly for several commits. The documentation was
+accurate the whole time. The command still did not do what its name says, and
+the case that motivated redaction, an accidentally shared private thing, is
+exactly the case where the body matters more than the address.
+
+The other six instances are documents drifting away from a tree that moved. This
+one is the opposite and worse: the document tracked the code perfectly, and the
+accuracy is what let the defect sit. A limitation written down reads as a
+decision. Nobody re-examines a decision, and "documented" and "handled" are
+indistinguishable in a changelog.
+
+This is the fifth or sixth time in this repository that documenting a defect has
+substituted for fixing it. The others were smaller and mostly got fixed a turn
+or two later, which is what made this one easy to leave: the pattern usually
+self-corrects, so it does not look like a pattern.
+
+No check catches it and none is proposed. A check that flags "this document
+describes a limitation" would fire on every honest caveat in the corpus, and
+the corpus is deliberately full of them. The distinction between a limitation
+that is a decision and a limitation that is a defect awaiting attention is not
+mechanical, and inventing a marker for it would produce a field nobody
+maintains.
+
+Reactivation: not applicable. What remains is a working note, that a limitation
+recorded in a manual should carry whether it is accepted or merely known, and
+that nothing currently makes anyone write that down.
+
 The fifth instance is no better covered than the others. Nothing checks that a
 journal row can name the code that wrote it, and no check here could: the
 authority is a file on a phone this repository never sees.

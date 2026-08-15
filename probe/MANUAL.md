@@ -295,10 +295,43 @@ record cannot silently lose things.
 It asks for `PURGE` typed in full and refuses to run non-interactively, so a
 widget or a batch script cannot trigger it.
 
-**Blobs are not touched.** Bodies under `~/trellis-probe/blobs/` are
-content-addressed and shared, and purge does not remove them. If a payload
-rather than an address is the concern, delete the blob yourself; the journal
-survives without it.
+**Bodies go too, when nothing else claims them.** Purge deletes the payload
+blobs the removed captures referenced, and keeps any blob that a surviving
+capture still references. It reports both numbers before asking for
+confirmation and again afterward.
+
+A retained blob is not a failure. Bodies are content-addressed, so two captures
+that fetched the same bytes name one file, and deleting it because one referring
+row is going would leave the other pointing at nothing. If you want a retained
+body gone, purge the captures that still hold it.
+
+**That is the sharp edge of content addressing, and it is worth understanding
+before you need it.** A body is only as deletable as its least sensitive
+referrer. If the same bytes arrived twice, once in the capture you want gone and
+once in a capture you want to keep, there is no way to remove the body and keep
+the other row honest. Byte-identical responses are commoner than they sound:
+refusal pages, "enable JavaScript" stubs, and empty bodies are often identical
+across captures, so an unrelated capture can pin a body you meant to destroy.
+The only remedies are to purge the other captures too, or to accept that the
+bytes stay.
+
+**Orphans are reported and not deleted.** A blob referenced by nothing is
+detectable once refcounting exists, and purge tells you how many there are. It
+does not remove them, because an orphan may predate a rewrite and that is a
+separate decision. `probe.py sweep` deletes them, asks for `SWEEP` typed in
+full, refuses to run non-interactively, and never touches the journal.
+
+**One path writes a body that no row ever names.** When a stub is recovered from
+the archive, the recovered body is written to disk and the `finding` records
+`payload_source: archive` without recording the blob. That body is an orphan
+from the moment it is written, so refcounting cannot associate it with the
+capture and purge will not remove it. Running `sweep` after `purge` does remove
+it. Until the finding carries the blob, purging an archive-recovered capture
+deletes the stub and leaves the fuller body behind, which is the wrong way
+round.
+
+Redaction never touches blobs. Excluding an object from an export is not
+deleting a body from disk, and the two stay distinct.
 
 ### Repeat encounters
 
