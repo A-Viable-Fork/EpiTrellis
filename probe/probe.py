@@ -700,7 +700,7 @@ def probe(shared_text):
     if payload_source == "archive" and verdict in ("soft_refusal", "client_rendered"):
         verdict = "recovered_from_archive"
 
-    emit({
+    found = {
         "event": "finding",
         "capture_id": cid,
         "kind": verdict,
@@ -711,7 +711,26 @@ def probe(shared_text):
         "flags": f,
         "title": meta.get("og_title") or meta.get("title", "")[:200],
         "host": host_of(final),
-    })
+    }
+    if payload_source == "archive" and ha:
+        # Which body was obtained is a fact about the encounter, so it belongs
+        # on the finding, in the field the file-share path already uses.
+        #
+        # Before this, the stub-recovery rewrite wrote the recovered body,
+        # reassigned `ha`, and emitted nothing naming it: `fetch_pair` had
+        # already gone out carrying the stub. That body was unreachable by
+        # every path the substrate has. purge could not target it, bundle could
+        # not count it, no function could find it, and an operator purging the
+        # capture would be told the payload was gone while the fuller version
+        # stayed on disk. The recovery worked because the body was invisible,
+        # and invisibility was the whole defect.
+        #
+        # Redundant on the other archive path, where the recovered body is
+        # already `fetch_pair.a.blob`. Refcounting takes a set, so naming it
+        # twice costs nothing and needing to know which path ran costs a
+        # reader something.
+        found["blob"] = ha
+    emit(found)
 
     notify("Trellis probe: " + verdict,
            (meta.get("og_title") or host_of(final))
@@ -1291,7 +1310,28 @@ def sweep():
         print("no orphan blobs: everything on disk is referenced by the journal")
         return
     print("%d blob(s) on disk are referenced by nothing in the journal." % len(orphans))
-    print("Deleting them is permanent and there is no backup.")
+
+    # A blob on disk is a file named by its own hash and carries no provenance,
+    # so the orphans cannot be sorted by where they came from. What the journal
+    # can say is how many findings recorded an archive-recovered payload without
+    # naming its body, which is every such finding written before 2026-08-15.
+    # Each one left a body behind. That is an upper bound on the archive share
+    # of the orphans rather than a count of them, because the other archive
+    # path already named its body under fetch_pair and produced no orphan.
+    pre_fix = sum(1 for r in rows
+                  if r.get("event") == "finding"
+                  and r.get("payload_source") == "archive"
+                  and not r.get("blob"))
+    if pre_fix:
+        print("\n%d finding(s) record an archive-recovered payload and name no"
+              % pre_fix)
+        print("body. Those predate the fix of 2026-08-15 and no row will ever")
+        print("name what they wrote, so sweep is the only way to reach them.")
+        print("At most %d of the orphans above came from that path. Which ones"
+              % pre_fix)
+        print("is not recoverable: a blob is a file named by its own hash and")
+        print("carries no provenance, so the split cannot be taken from disk.")
+    print("\nDeleting them is permanent and there is no backup.")
     if not sys.stdin.isatty():
         print("\nRefusing to run non-interactively. Run it from a shell.")
         return

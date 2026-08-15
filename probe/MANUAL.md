@@ -321,14 +321,30 @@ does not remove them, because an orphan may predate a rewrite and that is a
 separate decision. `probe.py sweep` deletes them, asks for `SWEEP` typed in
 full, refuses to run non-interactively, and never touches the journal.
 
-**One path writes a body that no row ever names.** When a stub is recovered from
-the archive, the recovered body is written to disk and the `finding` records
-`payload_source: archive` without recording the blob. That body is an orphan
-from the moment it is written, so refcounting cannot associate it with the
-capture and purge will not remove it. Running `sweep` after `purge` does remove
-it. Until the finding carries the blob, purging an archive-recovered capture
-deletes the stub and leaves the fuller body behind, which is the wrong way
-round.
+**Archive-recovered bodies, and the ones already on your device.** When a stub is
+recovered from the archive, the finding now records the blob it obtained, so
+purge reaches it through the ordinary refcount path and an archive-recovered
+capture takes both the stub and the recovered body with it.
+
+Before 2026-08-15 it did not. That body was written to disk and named by nothing:
+`fetch_pair` had already gone out carrying the stub, and the finding recorded
+`payload_source: archive` without the blob. Such a body is unreachable by every
+path this substrate has. Purge cannot target it, bundle cannot count it, and no
+function can find it, because every one of them works from the journal and the
+journal never mentioned it.
+
+**Captures made before that date still have this.** No row will ever name what
+they wrote, and nothing can retroactively associate a body with the capture that
+fetched it, because a blob is a file named by its own hash and carries no
+provenance. `sweep` is the only way to reach them. It reports how many findings
+record an archive-recovered payload without naming a body, which is an upper
+bound on how many of the orphans came from that path, and it says plainly that
+which orphans those are cannot be recovered from disk.
+
+That is the shape of the defect worth remembering: the recovery worked *because*
+the body was invisible to everything, and invisibility was the whole problem. An
+operator purging such a capture was told the payload was gone while the fuller
+version stayed.
 
 Redaction never touches blobs. Excluding an object from an export is not
 deleting a body from disk, and the two stay distinct.

@@ -259,9 +259,37 @@ that is a decision and a limitation that is a defect awaiting attention is not
 mechanical, and inventing a marker for it would produce a field nobody
 maintains.
 
+**The same pattern fired twice in one turn, and the second one cost more.**
+The first was purge leaving payload bodies behind: a documented limitation, and
+the documentation was accurate the whole time. The second was found while fixing
+the first. The archive-recovery path wrote a body and recorded nothing naming
+it, which was flagged in a report, written into the manual, and left.
+
+That second one is a different cost class from everything else in this entry.
+The others left a document wrong, or a command doing less than its name says,
+and in every case the artifact was still reachable: someone could look at it,
+count it, decide about it. This one left *unreachable data*. A body no row names
+cannot be targeted by purge, counted by bundle, or found by any function,
+because every path this substrate has works from the journal. The privacy
+failure redaction exists to prevent was live the whole time: purge the capture,
+be told the payload is gone, and the fuller recovered version stays on disk.
+
+Worse, the invisibility was load-bearing in both directions. The recovery worked
+because nothing tracked the body, and that same property is what made it
+undeletable. A defect that hides itself is not the same as a defect written
+down and deferred, and the ledger should not file them together.
+
+Fixed 2026-08-15: the finding names the blob when the payload came from the
+archive, so refcounting reaches it. Bodies written before that date remain
+unreachable by anything except `sweep`, and nothing can retroactively say which
+orphans they are, because a blob carries no provenance.
+
 Reactivation: not applicable. What remains is a working note, that a limitation
 recorded in a manual should carry whether it is accepted or merely known, and
-that nothing currently makes anyone write that down.
+that nothing currently makes anyone write that down. The stronger note is that
+"documented" should never be the resting state for a defect that makes data
+unreachable, because the documentation is then the only evidence the data
+exists.
 
 The fifth instance is no better covered than the others. Nothing checks that a
 journal row can name the code that wrote it, and no check here could: the
