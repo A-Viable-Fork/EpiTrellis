@@ -1095,16 +1095,34 @@ def bundle():
             excluded["no_reference_row" if ref is None else "no_address"] += 1
             continue
         hashed_rows += 1
-        e = objs.setdefault(h, {"h": h, "ref": key,
-                                "alt": {}, "kinds": [], "n": 0})
+        e = objs.setdefault(h, {"h": h, "ref": key, "alt": {}, "kinds": [],
+                                "n": 0, "srcs": set()})
         if not e["ref"]:
             e["ref"] = key
         e["n"] += 1
+        # The address as it was recorded, before normalization. Two sightings
+        # of one object are a different result depending on whether the
+        # addresses were identical or merely equivalent, and the bundle cannot
+        # tell them apart after the fact because it keeps only the key.
+        if ref:
+            src = (ref.get("final_url") or ref.get("cleaned_url")
+                   or ref.get("shared_url"))
+            if src:
+                e["srcs"].add(src)
         kind = r.get("kind", "unknown")
         if kind not in e["kinds"]:
             e["kinds"].append(kind)
         for k, v in (r.get("alt_referents") or {}).items():
             e["alt"][v["hash"]] = v["url"]
+
+    # Two sightings of one object are different results depending on whether
+    # the addresses were the same or merely equivalent, and only the journal
+    # can say which.
+    repeat_same = sum(o["n"] - 1 for o in objs.values()
+                      if o["n"] > 1 and len(o["srcs"]) <= 1)
+    repeat_norm = sum(o["n"] - 1 for o in objs.values()
+                      if o["n"] > 1 and len(o["srcs"]) > 1)
+    collapsed_by_norm = sum(1 for o in objs.values() if len(o["srcs"]) > 1)
 
     out = {
         "v": 0,
@@ -1173,11 +1191,26 @@ def bundle():
         again = sum(o["seen"] - 1 for o in repeats)
         print("\n%d object(s) were encountered more than once, %d repeat "
               "sighting(s)." % (len(repeats), again))
-        print("%d reference(s) collapsed to %d object(s). That collapse is what"
-              % (hashed_rows, n))
-        print("referent hashing is for: the same object reached twice by")
-        print("different addresses is one object, and nothing had to agree for")
-        print("that to hold.")
+        print("%d reference(s) collapsed to %d object(s), and the collapse "
+              "splits two ways:" % (hashed_rows, n))
+        print("  %d from the same address recorded again" % repeat_same)
+        print("  %d from distinct addresses normalizing to one referent key"
+              % repeat_norm)
+        if collapsed_by_norm:
+            print("\n%d object(s) were reached by more than one address. That is"
+                  % collapsed_by_norm)
+            print("what referent hashing is for: the same object reached by two")
+            print("different addresses is one object, and nothing had to agree")
+            print("for that to hold.")
+        else:
+            print("\nNo object here was reached by two different addresses, so")
+            print("this journal does not yet show normalization doing work")
+            print("beyond removing exact repeats.")
+            if not sum(len(o["alt"]) for o in out["objects"]):
+                print("Every alternate referent field is empty as well, so")
+                print("nothing was matched through a canonical or og:url")
+                print("variant either.")
+
     print("\nwritten to Download/trellis-export/bundle.json")
 
     alts = sum(len(o["alt"]) for o in out["objects"])

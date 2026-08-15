@@ -175,6 +175,31 @@ a queue nobody reads is worth nothing. It did list entry 9's exact sentence at
 the commit where that claim was live, which is the only evidence that the
 advisory half is pointed at anything real.
 
+**A sixth instance, 2026-08-14, in operator-facing output, which is a new
+surface for the class.** `probe.py bundle` printed, on every run where anything
+collapsed: "the same object reached twice by different addresses is one object,
+and nothing had to agree for that to hold." On the device journal that case had
+not occurred. The entire collapse was one object seen four times, every
+alternate referent field was empty, and nothing in the data showed two distinct
+addresses meeting at one key. The sentence described the capability the code was
+written to demonstrate rather than the result the run produced.
+
+It is the same shape as the documents, moved: a claim held in prose whose
+authority is elsewhere, asserted in general terms where the specific case would
+have been checkable. What is new is the surface. A document drifts silently
+until someone reads it; a printed message is read by the operator on every run
+and is the most likely thing to be quoted onward, which makes it the worst place
+for the class to live and the last place anyone was looking for it.
+
+Killed by having the message report what the run actually shows. It now splits
+the collapse into repeats of one address and distinct addresses meeting at one
+key, and when the second count is zero it says so rather than asserting it in
+general. Neither number was available before, because the bundle keeps only the
+referent key and the distinction lives in the journal.
+
+No check catches this one either. The output is prose assembled at runtime and
+`verify-selfdescription.py` reads files in the tree, not what a program prints.
+
 The fifth instance is no better covered than the others. Nothing checks that a
 journal row can name the code that wrote it, and no check here could: the
 authority is a file on a phone this repository never sees.

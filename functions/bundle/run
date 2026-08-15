@@ -109,10 +109,19 @@ for r in rows:
         excluded["no_reference_row" if ref is None else "no_address"] += 1
         continue
     hashed_rows += 1
-    e = objs.setdefault(h, {"h": h, "ref": key, "alt": {}, "kinds": [], "n": 0})
+    e = objs.setdefault(h, {"h": h, "ref": key, "alt": {}, "kinds": [],
+                            "n": 0, "srcs": set()})
     if not e["ref"]:
         e["ref"] = key
     e["n"] += 1
+    # The address as recorded, before normalization. Two sightings of one
+    # object are a different result depending on whether the addresses were
+    # identical or merely equivalent, and the key alone cannot say which.
+    if ref:
+        src = (ref.get("final_url") or ref.get("cleaned_url")
+               or ref.get("shared_url"))
+        if src:
+            e["srcs"].add(src)
     kind = r.get("kind", "unknown")
     if kind not in e["kinds"]:
         e["kinds"].append(kind)
@@ -147,7 +156,17 @@ if ex["total"]:
     print("those are the hypothesis break, not a gap in the export", file=err)
 repeats = [o for o in out["objects"] if o["seen"] > 1]
 if repeats:
+    same = sum(o["n"] - 1 for o in objs.values()
+               if o["n"] > 1 and len(o["srcs"]) <= 1)
+    norm = sum(o["n"] - 1 for o in objs.values()
+               if o["n"] > 1 and len(o["srcs"]) > 1)
     print("%d object(s) seen more than once, %d repeat sighting(s); "
           "%d reference(s) collapsed to %d object(s)"
           % (len(repeats), sum(o["seen"] - 1 for o in repeats), hashed_rows, n),
           file=err)
+    print("%d collapse(s) from the same address recorded again, %d from "
+          "distinct addresses normalizing to one key" % (same, norm), file=err)
+    if not norm:
+        print("no object was reached by two different addresses, so this "
+              "journal does not yet show normalization doing work beyond "
+              "removing exact repeats", file=err)
