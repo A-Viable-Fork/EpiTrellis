@@ -62,6 +62,13 @@ def refhash(url):
     return hashlib.sha256(referent_key(url).encode()).hexdigest()[:16]
 
 
+# One pair, not a compatibility matrix. These two disagree about whether the
+# payload was obtained, which has one answer per encounter. Multiplicity is not
+# contradiction, so nothing else is counted as conflicting.
+CONFLICT_PAIR = frozenset({"stable_referent", "producer_refused"})
+CONFLICT_RULE = "stable_referent with producer_refused"
+
+
 def derive_referent(ref):
     """Recover (referent_key, object_hash) from a reference row that predates
     the hashing code. Returns (None, None) when it carries no URL."""
@@ -128,13 +135,21 @@ for r in rows:
     for v in (r.get("alt_referents") or {}).values():
         e["alt"][v["hash"]] = v["url"]
 
+# A verdict describes an encounter, not an object. A stranger receiving this
+# bundle cannot otherwise see that an object's verdict list disagrees with
+# itself. Reported, not resolved.
+multi_kind = sum(1 for o in objs.values() if len(o["kinds"]) > 1)
+conflicting = sum(1 for o in objs.values() if CONFLICT_PAIR <= set(o["kinds"]))
+
 out = {"v": 0, "objects": [
     {"h": o["h"], "ref": o["ref"], "seen": o["n"], "kinds": o["kinds"], "alt": o["alt"]}
     for o in sorted(objs.values(), key=lambda x: x["ref"] or "")],
     "findings": findings_total,
     "excluded": {"no_address": excluded["no_address"],
                  "no_reference_row": excluded["no_reference_row"],
-                 "total": excluded["no_address"] + excluded["no_reference_row"]}}
+                 "total": excluded["no_address"] + excluded["no_reference_row"]},
+    "verdicts": {"multi_kind": multi_kind, "conflicting": conflicting,
+                 "conflict_rule": CONFLICT_RULE}}
 
 blob = json.dumps(out, separators=(",", ":"))
 print(blob)
@@ -170,3 +185,10 @@ if repeats:
         print("no object was reached by two different addresses, so this "
               "journal does not yet show normalization doing work beyond "
               "removing exact repeats", file=err)
+if multi_kind:
+    print("%d object(s) carry more than one verdict across their sightings, "
+          "of which %d pair %s" % (multi_kind, conflicting, CONFLICT_RULE),
+          file=err)
+    print("a verdict describes an encounter rather than an object; "
+          "multiplicity is not contradiction and only that pair is counted",
+          file=err)

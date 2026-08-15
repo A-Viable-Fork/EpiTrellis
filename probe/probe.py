@@ -1020,6 +1020,10 @@ def recheck():
     print("\ndone. originals are preserved; new findings appended.")
 
 
+CONFLICT_PAIR = frozenset({"stable_referent", "producer_refused"})
+CONFLICT_RULE = "stable_referent with producer_refused"
+
+
 def derive_referent(ref):
     """Recover (referent_key, object_hash) from a reference row that predates
     the hashing code.
@@ -1115,6 +1119,20 @@ def bundle():
         for k, v in (r.get("alt_referents") or {}).items():
             e["alt"][v["hash"]] = v["url"]
 
+    # A verdict describes an encounter, not an object. Four sightings of one
+    # object on one device in one morning produced both stable_referent and
+    # producer_refused, and the bundle showed them as an unremarkable set.
+    #
+    # One pair, stated once, and deliberately not a compatibility matrix over
+    # the whole vocabulary. These two disagree about whether the payload was
+    # obtained, which is a question with one answer per encounter. Everything
+    # else stays uncounted, because multiplicity is not contradiction:
+    # client_rendered beside soft_refusal is two true things about two
+    # encounters, and nothing here is equipped to say otherwise.
+    multi_kind = sum(1 for o in objs.values() if len(o["kinds"]) > 1)
+    conflicting = sum(1 for o in objs.values()
+                      if CONFLICT_PAIR <= set(o["kinds"]))
+
     # Two sightings of one object are different results depending on whether
     # the addresses were the same or merely equivalent, and only the journal
     # can say which.
@@ -1138,6 +1156,13 @@ def bundle():
             "no_address": excluded["no_address"],
             "no_reference_row": excluded["no_reference_row"],
             "total": excluded["no_address"] + excluded["no_reference_row"],
+        },
+        # A stranger receiving this cannot otherwise see that an object's
+        # verdict list disagrees with itself. Reported, not resolved.
+        "verdicts": {
+            "multi_kind": multi_kind,
+            "conflicting": conflicting,
+            "conflict_rule": CONFLICT_RULE,
         },
     }
 
@@ -1210,6 +1235,19 @@ def bundle():
                 print("Every alternate referent field is empty as well, so")
                 print("nothing was matched through a canonical or og:url")
                 print("variant either.")
+
+    if multi_kind:
+        print("\n%d object(s) carry more than one verdict across their "
+              "sightings," % multi_kind)
+        print("of which %d pair %s." % (conflicting, CONFLICT_RULE))
+        print("A verdict describes an encounter rather than an object, and")
+        print("this bundle exports them as though they described objects.")
+        if conflicting:
+            print("Those two disagree about whether the payload was obtained.")
+            print("Nothing here resolves that or picks a winner.")
+        print("Multiplicity is not contradiction: only this one pair is")
+        print("counted as conflicting, and the rest may be several true")
+        print("things about several encounters.")
 
     print("\nwritten to Download/trellis-export/bundle.json")
 
