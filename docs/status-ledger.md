@@ -59,6 +59,17 @@ The same run excludes 9 of 28 findings from the bundle. Seven file shares have
 no address, and two captures carried no URL and so have no reference row. The
 bundle now reports both counts rather than dropping them silently.
 
+## Established by measurement, as of August 2026
+
+Moved here from the README on 2026-10-14 (read at commit 98f8f2b), so the README describes the design and this ledger holds what has been measured. The first two lines rest on `docs/findings/probe-referent-stability.md`; the others are marked.
+
+- **Referents are stable.** Across thirteen objects encountered in ordinary reading over ten producers, eleven produced a verified, normalized address derived locally with no cooperation from the producer. Eight producers yielded referents: LessWrong, Substack, arXiv, X, Google Docs, YouTube, TikTok, Reddit. The other two, Facebook and NYT, were discarded by the instrument rather than by anything about the objects, because the probe throws away a referent when the fetch fails even though the shared URL was in hand. This was the thing most likely to break the whole idea, and it did not.
+- **Payload is the real problem, and it splits three ways.** Not text at all (video). Withheld by the producer (Reddit serves a six-character stub, NYT refuses outright, the Internet Archive cannot rescue a paywall). Behind a client-side render.
+- **Two parties who never coordinated join by hash.** Independently derived referents match across different URL forms. Set intersection, no agreement required. (The two-party join in Built above; `docs/findings/verdict-is-per-encounter.md`.)
+- **What travels is small.** Roughly 210 bytes per object. At that size, publishing to five hosts costs nothing, which is why no gradient pulls anyone toward a single one. (Unsourced: the README stated this figure and no finding document in the tree holds it; it stands as a reading to re-derive, not a measurement.)
+
+The competition field these measurements answer to (twenty-two public repositories carrying twenty-one submissions, fifteen with no license file) is recorded in `docs/departure-from-epistack.md`.
+
 ## Specified, not built
 
 | Thing | Where |

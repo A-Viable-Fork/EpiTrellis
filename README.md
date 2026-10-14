@@ -1,6 +1,6 @@
 ---
 Type: reference
-Purpose: "Entry point. What EpiTrellis is, what has been established by measurement, and where to find the source of truth for any claim."
+Purpose: "Entry point. What EpiTrellis is as a design, how its parts fit, and where to find the source of truth for any claim, including what is built and what has been measured."
 Depends on: [docs/corpus-index.md, docs/status-ledger.md, docs/findings/probe-referent-stability.md, docs/departure-from-epistack.md, spec/function.md]
 Depended on by: []
 ---
@@ -11,16 +11,11 @@ Your phone's apps each hold your stuff in their own walled garden: your reading,
 
 The bet is that if that works well enough, the phone stops being a set of apps you visit and starts being something that holds your world.
 
-## Status
+EpiTrellis is the substrate for that: a calling convention for functions that read and write a journal of encounters kept on the device, a loader that discovers functions by presence and identifies each by the hash of its file, an instrument that captures what the person meets through the share sheet, and a research structure that names the jobs a federated commons performs and what is still open about each.
 
-Early. One measuring instrument runs, the functions in `functions/` run, and every check in `scripts/` passes. Everything else is design.
+The machinery is general. A person's journal is instance data: it lives on their device and never enters this tree, which holds only synthetic fixtures. A function is anyone's executable, dropped into a directory. Swapping either changes what the system knows and does, and leaves the convention as it is.
 
-What has actually been established, as of August 2026:
-
-- **Referents are stable.** Across thirteen objects encountered in ordinary reading over ten producers, eleven produced a verified, normalized address derived locally with no cooperation from the producer. Eight producers yielded referents: LessWrong, Substack, arXiv, X, Google Docs, YouTube, TikTok, Reddit. The other two, Facebook and NYT, were discarded by the instrument rather than by anything about the objects, because the probe throws away a referent when the fetch fails even though the shared URL was in hand. This was the thing most likely to break the whole idea, and it did not.
-- **Payload is the real problem, and it splits three ways.** Not text at all (video). Withheld by the producer (Reddit serves a six-character stub, NYT refuses outright, the Internet Archive cannot rescue a paywall). Behind a client-side render.
-- **Two parties who never coordinated join by hash.** Independently derived referents match across different URL forms. Set intersection, no agreement required.
-- **What travels is small.** Roughly 210 bytes per object. At that size, publishing to five hosts costs nothing, which is why no gradient pulls anyone toward a single one.
+The state of the system against this design, what runs, what has been measured and what remains open, is in [`docs/status-ledger.md`](docs/status-ledger.md). The calling convention is [`spec/function.md`](spec/function.md); the measurements are in `docs/findings/`, led by [`docs/findings/probe-referent-stability.md`](docs/findings/probe-referent-stability.md); how this grew out of the EpiStack competition field is [`docs/departure-from-epistack.md`](docs/departure-from-epistack.md); [`docs/corpus-index.md`](docs/corpus-index.md) lists every document and what it is for.
 
 ## Repository
 
@@ -35,7 +30,7 @@ docs/          CC-BY-SA   design and findings
 scripts/       Apache-2.0 the checks
 ```
 
-Licensing is segmented by capture risk. The spec is CC0 because a format nobody can freely implement is not a waist. The application layer, when it exists, is AGPL because that is where a provider could host a closed fork.
+Licensing is segmented by capture risk. The spec is CC0 because a format nobody can freely implement is not a waist. An application layer is AGPL, because that is where a provider could host a closed fork.
 
 ## Try it
 
@@ -58,22 +53,15 @@ Subprocess isolation is also the licensing answer: running a program as a subpro
 ## The checks
 
 ```sh
-python3 scripts/verify-privacy.py     # no real capture data in the tree
-python3 scripts/verify-license.py     # every function declares one
-python3 scripts/verify-functions.py   # every function runs, and tolerates events it does not know
-python3 scripts/verify-docs.py        # every document carries a typed header, and the dependency graph agrees with itself
-python3 scripts/verify-vendor.py      # vendored foreign code still has the bytes it was vendored with
-python3 scripts/verify-selfdescription.py  # documents that describe the tree agree with the tree
-python3 scripts/verify-parity.py      # the two copies of referent_key and the capability list still agree
+python3 scripts/verify-privacy.py           # first, always
+for f in scripts/verify-*.py; do python3 "$f" || break; done
 ```
+
+`scripts/` is the authority for which checks exist; each states what it checks in its own docstring. Between them they keep real capture data out of the tree, require a license per function, run every function against the fixtures (including an event type it does not know), hold every document's typed header and dependency graph consistent, keep vendored foreign code at the bytes it was vendored with, test that paths named in documents agree with the tree, and pin the two deliberate copies of `referent_key` and the capability list to shared fixtures.
 
 Privacy runs first and alone. The journal holds reading history and share links that carry access rather than merely address; git history is not deletable in practice, so one real export used once as a convenient fixture is permanent. Fixtures are generated and carry a `synthetic` marker.
 
-Privacy and functions each caught a real problem on their first run, which is the only reason to trust either. `verify-docs.py` checks headers and dependency reciprocity; it does not yet check cited figures against the journal, so documents can still drift.
-
-## Where this came from
-
-The FLF EpiStack competition, mid-2026. Twenty-two public repositories carrying twenty-one submissions, built independently, most of which turn out to be components of one thing nobody was coordinating. Fifteen of the twenty-two shipped with no license file at all, which under default copyright makes a field organized around compounding legally uncompoundable. Seven carry one: five MIT, one GPL-3.0, one AGPL-3.0. One of the fifteen declares MIT in its README and ships no `LICENSE`, so it counts as unlicensed by file while plainly meaning otherwise, which is its own small argument for checking the file rather than the intent.
+## Findings over design
 
 `trellises/` holds the research structure: what jobs exist, what varies between implementations, and what is still open. `docs/findings/` holds what the instrument has established, with dates.
 
