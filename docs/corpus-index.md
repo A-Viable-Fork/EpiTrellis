@@ -15,7 +15,7 @@ system, and it carries no typed header.
 
 | Path | Type | For |
 |---|---|---|
-| `README.md` | reference | Entry point. What this is and what is established |
+| `README.md` | reference | Entry point. What this is as a design, and where the status and findings live |
 | `CLAUDE.md` | specification | Standing rules for anyone or anything editing this repository |
 | `spec/function.md` | specification | The calling convention. The waist |
 | `docs/document-style-guide.md` | specification | Typed headers and the two checks |
